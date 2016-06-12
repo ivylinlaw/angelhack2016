@@ -17,6 +17,12 @@
     </script>
     <script src="https://js.arcgis.com/3.16/"></script>
     <script>
+      var dojoConfig = {
+          parseOnLoad: true
+      };
+    </script>
+    <script src="https://js.arcgis.com/3.16/"></script>
+    <script>
       require([
         "esri/urlUtils",
         "esri/config",
@@ -69,8 +75,8 @@
                 
         stopSymbol = new SimpleMarkerSymbol().setStyle(SimpleMarkerSymbol.STYLE_CROSS).setSize(15);
         stopSymbol.outline.setWidth(3);
-        barrierSymbol = new SimpleMarkerSymbol().setStyle(SimpleMarkerSymbol.STYLE_X).setSize(10);
-        barrierSymbol.outline.setWidth(3).setColor(new Color([255,0,0]));
+        // barrierSymbol = new SimpleMarkerSymbol().setStyle(SimpleMarkerSymbol.STYLE_X).setSize(10);
+        // barrierSymbol.outline.setWidth(3).setColor(new Color([255,0,0]));
         routeSymbols = {
           "Route 1": new SimpleLineSymbol().setColor(new Color([0,0,255,0.5])).setWidth(5),
           "Route 2": new SimpleLineSymbol().setColor(new Color([0,255,0,0.5])).setWidth(5),
@@ -241,6 +247,12 @@
         function errorHandler(err) {
           alert("An error occured\n" + err.message + "\n" + err.details.join("\n"));
         }
+        //***Test draw circle(polygon)***
+        map.on("load", function() {
+          // addCircleBarrier(-118.457186, 34.0298551, 1);
+          addCircleBarrier(-118.457186, 34.0298551, 2);
+          // addCircleBarrier(-118.457186, 34.0298551, 3);
+        });
         // Create barriers
         map.on("load", function() {
           // Create street lights
@@ -250,6 +262,21 @@
           });
           map.addLayer(featureLayer);
           //Load-in barrier point
+
+          //Create a new PictureMarkerSymbol based on the static image and set a few properties.
+          //Change url to customize
+          barrierSymbol = new esri.symbol.PictureMarkerSymbol({
+                                          "angle": 0,
+                                          "xoffset": 0,
+                                          "yoffset": 12,
+                                          "type": "esriPMS",
+                                          "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
+                                          "contentType": "image/png",
+                                          "width": 24,
+                                          "height": 24
+                                          });
+
+
           var pt = new esri.geometry.Point(-118.457186, 34.0298551);
           routeParams.barriers.features.push(
               map.graphics.add(
@@ -270,43 +297,40 @@
           //   );
           
         });
-        //***Test draw circle(polygon)***
-        map.on("load", function() {
-          // addCircleBarrier(-118.457186, 34.0298551, 1);
-          addCircleBarrier(-118.457186, 34.0298551, 2);
-          // addCircleBarrier(-118.457186, 34.0298551, 3);
-        });
+        
       });
     </script>
 
   </head>
-  <body class="claro">
-
-  <div id="safefast"> Select Route Setting <select id="routeName">
-    <option value="Route 1">Safe</option>
-    <option value="Route 2">Balanced</option>
-    <option value="Route 3">Fast</option>
-  </select></div>
-  <div id="routecreation">
-        <button id="addStopsBtn">Add Stops</button>
-        <button id="clearStopsBtn">Clear Stops</button>
-        <button id="addBarriersBtn">Add Barriers</button>
-        <button id="clearBarriersBtn">Clear Barriers</button>
-        <button id="solveRoutesBtn">Solve Routes</button>
-        <button id="clearRoutesBtn">Clear Routes</button>
-     </div>
+  <body>
+    <div id="safefast"> 
+      Select Route Setting
+      <select id="routeName">
+        <option value="Route 1">Safe</option>
+        <option value="Route 2">Balanced</option>
+        <option value="Route 3">Fast</option>
+      </select>
+    </div>
+    <div id="routecreation">
+      <button id="addStopsBtn">Add Stops</button>
+      <button id="clearStopsBtn">Clear Stops</button>
+      <button id="addBarriersBtn">Add Barriers</button>
+      <button id="clearBarriersBtn">Clear Barriers</button>
+      <button id="solveRoutesBtn">Solve Routes</button>
+      <button id="clearRoutesBtn">Clear Routes</button>
+    </div>
    <!--   <img src="images/murder.png" /> -->
-  <div id="centerpage">
-    <div id="map" style="width:900px; height:600px;"></div>
-    <form id="extrasettings">
-      <p>Choose display for Crime Data</p>
-      <input type="radio" id="bufferzone" checked> Buffer Zone<br>
-      <input type="radio" id="icons" unchecked> Icons<br><br>
-      <input type="checkbox" checked="checked" id="streetlights">Display Street Lights?<br>
-      </form>
-  </div>
-  <div id="erroralert">
-    <p>Any server error messages will be displayed in an alert box.</p>
+    <div id="centerpage">
+      <div id="map" style="width:900px; height:600px;"></div>
+      <form id="extrasettings">
+        <p>Choose display for Crime Data</p>
+        <input type="radio" name="myRadioButtons" id="bufferzone" value="1" checked/> Buffer Zone<br>
+        <input type="radio" name="myRadioButtons" id="icons" value="2" unchecked/> Icons<br><br>
+        <input type="checkbox" checked="checked" id="streetlights"/>Display Street Lights?<br>
+        </form>
+    </div>
+    <div id="erroralert">
+      <p>Any server error messages will be displayed in an alert box.</p>
     </div>
   </body>
 </html>

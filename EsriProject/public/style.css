@@ -39,9 +39,25 @@ body {
 	margin-bottom: 10px;
 }
 
+#routeName{
+    border: 0;
+    box-shadow: none;
+    font-size: 10pt;
+}
+
 #erroralert {
     float: left;
     clear: left;
     display:inline
     outline: #000 solid 1px;
+}
+
+button {
+	margin: 0 10px;
+	font-size: 10pt;
+	height: 20px;
+	background-color: #dcdcdc;
+	border: 0;
+	color:#000;
+	text-decoration:none;
 }
