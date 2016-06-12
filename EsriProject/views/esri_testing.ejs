@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="https://js.arcgis.com/3.16/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
     
+    <script type="text/javascript">
+      var dojoConfig = {
+          parseOnLoad: true
+      };
+    </script>
     <script src="https://js.arcgis.com/3.16/"></script>
     <script>
       require([
@@ -70,6 +75,7 @@
 
         routeParams.outSpatialReference = {"wkid":102100};
 
+        //dojo.ready(function() { routeTask.on("solve-complete", showRoute); });
         routeTask.on("solve-complete", showRoute);
         routeTask.on("error", errorHandler);
                 
@@ -115,39 +121,70 @@
               )
             );
 
+          // var polygon = new esri.geometry.Polygon([
+          //   [[-118.457186,34.0298551],[-118.48,34.0298551],[-118.48,34.035],[-118.457186,34.0298551]]]);
+          // routeParams.polygonBarriers.features.push(  
+          //     map.graphics.add(
+          //       new esri.Graphic(
+          //         polygon,
+          //         polygonBarrierSymbol)
+          //       )  
+          //   );
+          
+        });
 
-          //Load-in barrier polygon
-          var polygon = new esri.geometry.Polygon([
-            [[-118.457186,34.0298551],[-118.46,34.0298551],[-118.46,34.031],[-118.457186,34.0298551]]]);
+        //Load-in barrier circle(polygon)
+        function drawCircleBarrier(long, lat, severity) {
+          //op as opacity
+          var op, radius;
+          if(severity == 1) {
+            op = 0.1;
+            radius = 0.0006;
+          }
+          else if(severity == 2) {
+            op = 0.25;
+            radius = 0.002;
+          }
+          else {
+            op = 0.5;
+            radius = 0.004;
+          }
 
-          //Create Circle -- didn't get it to work
-          // var radius = 100;
-          // var center = new esri.geometry.Point([-118.457186, 34.0298551]);
-          // var circle = new esri.geometry.Polygon(map.spatialReference);
-          // var ring = []; // point that make up the circle
-          // var pts = 40; // number of points on the circle
-          // var angle = 360 / pts; // used to compute points on the circle
-          // for(var i = 1; i <= pts; i++) {
-          //   // convert angle to raidans
-          //   var radians = i * angle * Math.PI / 180;
-          //   console.log(radians);
-          //   // add point to the circle
-          //   ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
+          polygonBarrierSymbol.setColor(new Color([0,0,255,op]));
+          polygonBarrierSymbol.setOutline(
+            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+
+          var center = new esri.geometry.Point([long, lat]);
+          var ring = []; // point that make up the circle
+          var pts = 40; // number of points on the circle
+          var angle = 360 / pts; // used to compute points on the circle
+          for(var i = 1; i <= pts; i++) {
+            // convert angle to raidans
+            var radians = i * angle * Math.PI / 180;
+            // add point to the circle
+            ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
             
-          //   console.log(center.x + radius * Math.cos(radians));
-          //   console.log(center.y + radius * Math.sin(radians));
-          // } 
-          // ring.push(ring[0]); // start point needs to == end point
-          // circle.addRing(ring);
+            //
+            console.log("x", center.x + radius * Math.cos(radians));
+            console.log("y", center.y + radius * Math.sin(radians));
+          } 
 
+          ring.push(ring[0]); // start point needs to == end point
+          var circle = new esri.geometry.Polygon(ring);
           routeParams.polygonBarriers.features.push(  
               map.graphics.add(
                 new esri.Graphic(
-                  polygon,
+                  circle,
                   polygonBarrierSymbol)
                 )  
             );
+        }
+
+        //Test draw circle(polygon)
+        map.on("load", function() {
+          drawCircleBarrier(-118.457186, 34.0298551, 1);
         });
+
 
       
         //Begins listening for click events to add stops
@@ -225,8 +262,11 @@
 
         //Solves the routes. Any errors will trigger the errorHandler function.
         function solveRoute() {
-          removeEventHandlers();
-          routeTask.solve(routeParams);
+          //Make sure data is ready?
+          //dojo.ready(function() {
+            removeEventHandlers();
+            routeTask.solve(routeParams);
+          //});
         }
 
         //Clears all routes
@@ -239,23 +279,26 @@
 
         //Draws the resulting routes on the map
         function showRoute(evt) {
-          clearRoutes();
+          //Make sure data is ready?
+          //dojo.ready(function() {
+            clearRoutes();
+            array.forEach(evt.result.routeResults, function(routeResult, i) {
+              routes.push(
+                map.graphics.add(
+                  routeResult.route.setSymbol(routeSymbols[routeResult.routeName])
+                )
+              );
 
-          array.forEach(evt.result.routeResults, function(routeResult, i) {
-            routes.push(
-              map.graphics.add(
-                routeResult.route.setSymbol(routeSymbols[routeResult.routeName])
-              )
-            );
-          });
-
-          var msgs = ["Server messages:"];
-          array.forEach(evt.result.messages, function(message) {
-            msgs.push(message.type + " : " + message.description);
-          });
-          if (msgs.length > 1) {
-            alert(msgs.join("\n - "));
-          }
+            });
+            
+            var msgs = ["Server messages:"];
+            array.forEach(evt.result.messages, function(message) {
+              msgs.push(message.type + " : " + message.description);
+            });
+            if (msgs.length > 1) {
+              alert(msgs.join("\n - "));
+            }
+          //});
         }
 
         //Reports any errors that occurred during the solve
