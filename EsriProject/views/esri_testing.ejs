@@ -49,7 +49,7 @@
         
         map = new Map("map", {
           basemap: "streets",
-          center: [-122.416, 37.802],
+          center: [-118.457186, 34.0298551],
           zoom: 15
         });
 
@@ -84,8 +84,12 @@
 
         // Create barriers
         map.on("load", function() {
+          // Create street lights
+          var featureLayer = new esri.layers.FeatureLayer("http://services1.arcgis.com/p84PN4WZvOWzi2j2/arcgis/rest/services/StreetLights/FeatureServer/0");
+          map.addLayer(featureLayer);
+
           //Load-in barrier point
-          var pt = new esri.geometry.Point(-122.416, 37.802);
+          var pt = new esri.geometry.Point(-118.457186, 34.0298551);
 
           routeParams.barriers.features.push(
               map.graphics.add(
