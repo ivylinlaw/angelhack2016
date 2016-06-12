@@ -49,6 +49,35 @@
         FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol,           
         Color, array, on, dom, registry
       ) {
+        var data = [
+         "Armed Robbery",34.01813889,-118.4824444,
+         "Armed Robbery",34.02561111,-118.49025,
+         "Armed Robbery",34.01555556,-118.4767778,
+         "Armed Robbery",34.02416667,-118.4839444,
+         "Armed Robbery",34.01419445,-118.49625,
+         "Armed Robbery",34.03641667,-118.4687917,
+         "Armed Robbery",34.01354167,-118.4726806,
+         "Armed Robbery",34.02713889,-118.4883611,
+         "Armed Robbery",34.01734722,-118.4734167,
+         "Armed Robbery",34.02597222,-118.4833194,
+         "Armed Robbery",34.0073889,-118.4944861,
+         "Armed Robbery",34.01418056,-118.4851528,
+         "Armed Robbery",34.01306945,-118.4838611,
+         "Armed Robbery",34.03020833,-118.4845694,
+         "Armed Robbery",34.00595833,-118.4898333,
+         "Armed Robbery",34.01975,-118.4689306,
+         "Armed Robbery",34.01975,-118.4689306,
+         "Armed Robbery",34.03176389,-118.4826667,
+         "Armed Robbery",34.02340278,-118.5059861,
+         "Armed Robbery",34.01947222,-118.4694444,
+         "Armed Robbery",34.03113889,-118.4795972,
+         "Armed Robbery",34.01025,-118.4601944,
+         "Armed Robbery",34.01031944,-118.4805417,
+         "Armed Robbery",34.00241668,-118.489625,
+         "Audible Burglar Alarm",34.02208333,-118.4962639
+       ];
+
+
         var map, routeTask, routeParams, routes = [];
         var stopSymbol, barrierSymbol, routeSymbols, polygonBarrierSymbol;
         var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect;
@@ -108,7 +137,7 @@
           routeParams.stops.features.push(
             map.graphics.add(
               new esri.Graphic(
-                esolveRoutevt.mapPoint,
+                evt.mapPoint,
                 stopSymbol,
                 { RouteName:dom.byId("routeName").value }
               )
@@ -159,7 +188,7 @@
             radius = 0.004;
           }
           //Change circle color
-          polygonBarrierSymbol.setColor(new Color([0,0,255,op]));
+          polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
           //Change circle outline
           polygonBarrierSymbol.setOutline(
             new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
@@ -247,12 +276,6 @@
         function errorHandler(err) {
           alert("An error occured\n" + err.message + "\n" + err.details.join("\n"));
         }
-        //***Test draw circle(polygon)***
-        map.on("load", function() {
-          // addCircleBarrier(-118.457186, 34.0298551, 1);
-          addCircleBarrier(-118.457186, 34.0298551, 2);
-          // addCircleBarrier(-118.457186, 34.0298551, 3);
-        });
         // Create barriers
         map.on("load", function() {
           // Create street lights
@@ -276,16 +299,21 @@
                                           "height": 24
                                           });
 
+          for (var i = 0; i < data.length; i = i+3) {
+           console.log(data[i+2]+', '+data[i+1]+'\n');
 
-          var pt = new esri.geometry.Point(-118.457186, 34.0298551);
-          routeParams.barriers.features.push(
-              map.graphics.add(
-                new esri.Graphic(
-                  pt,
-                  barrierSymbol
-                )
-              )
-            );
+           addCircleBarrier(data[i+2], data[i+1], 2);
+
+           routeParams.barriers.features.push(
+             map.graphics.add(
+               new esri.Graphic(
+                 new esri.geometry.Point(data[i+2], data[i+1]),
+                 barrierSymbol
+               )
+             )
+           );
+         }
+
           // var polygon = new esri.geometry.Polygon([
           //   [[-118.457186,34.0298551],[-118.48,34.0298551],[-118.48,34.035],[-118.457186,34.0298551]]]);
           // routeParams.polygonBarriers.features.push(  
