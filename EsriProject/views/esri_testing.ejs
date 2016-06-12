@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
     <link rel="stylesheet" href="style.css" />
     
-    <!--script type="text/javascript">
-    //   var dojoConfig = {
-    //       parseOnLoad: true
-    //   };
-    // </script-->
+    <script type="text/javascript">
+      var dojoConfig = {
+          parseOnLoad: true
+      };
+    </script>
     <script src="https://js.arcgis.com/3.16/"></script>
     <script>
       require([
@@ -1028,6 +1028,9 @@
         on(dom.byId("clearBarriersBtn"), "click", clearBarriers);
         on(dom.byId("solveRoutesBtn"), "click", solveRoute);
         on(dom.byId("clearRoutesBtn"), "click", clearRoutes);
+
+        on(dom.byId("bufferzone"), "click", showBufferZones);
+        on(dom.byId("icons"), "click", showIcons);
       
         //Begins listening for click events to add stops
         function addStops() {
@@ -1062,10 +1065,38 @@
         }
         //Clears all barriers
         function clearBarriers() {
-          removeEventHandlers();
-          for (var i=routeParams.barriers.features.length-1; i>=0; i--) {
-            map.graphics.remove(routeParams.barriers.features.splice(i, 1)[0]);
-          }
+          // clearAll();
+
+          // //Create a new PictureMarkerSymbol based on the static image and set a few properties.
+          // //Change url to customize
+          // // Create barriers
+          // barrierSymbol = new esri.symbol.PictureMarkerSymbol({
+          //                                 "angle": 0,
+          //                                 "xoffset": 0,
+          //                                 "yoffset": 12,
+          //                                 "type": "esriPMS",
+          //                                 "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
+          //                                 "contentType": "image/png",
+          //                                 "width": 24,
+          //                                 "height": 24
+          //                                 });
+
+          // console.log("showIcons() middle");
+
+          // for (var i = 0; i < data.length; i = i+4) {
+            
+          //   if(data[i+3] > 2) {
+          //     console.log(data[i+2]+', '+data[i+1]+'\n');
+          //     routeParams.barriers.features.push(
+          //       map.graphics.add(
+          //         new esri.Graphic(
+          //           new esri.geometry.Point(data[i+1], data[i+2]),
+          //           barrierSymbol
+          //         )
+          //       )
+          //     );
+          //   }
+          // }
         }
         //Adds a barrier
         function addBarrier(evt) {
@@ -1085,15 +1116,15 @@
           //op as opacity, radius as radius
           var op, radius;
           if(severity == 1) {
-            op = 0.1;
+            op = 0.05;
             radius = 0.0004;
           }
           else if(severity == 2) {
-            op = 0.25;
+            op = 0.15;
             radius = 0.0007;
           }
           else {
-            op = 0.5;
+            op = 0.25;
             radius = 0.001;
           }
           //Change circle color
@@ -1176,16 +1207,23 @@
             array.forEach(evt.result.messages, function(message) {
               msgs.push(message.type + " : " + message.description);
             });
-            if (msgs.length > 1) {
-              alert(msgs.join("\n - "));
-            }
+            // if (msgs.length > 1) {
+            //   alert(msgs.join("\n - "));
+            // }
           //});
         }
         //Reports any errors that occurred during the solve
         function errorHandler(err) {
           alert("An error occured\n" + err.message + "\n" + err.details.join("\n"));
         }
-        // Create barriers
+        //Clear all
+        function clearAll() {
+          clearStops();
+          clearBarriers();
+          clearCircleBarrier();
+          clearRoutes();
+        }
+        
         map.on("load", function() {
           // Create street lights
           var featureLayer = new esri.layers.FeatureLayer("http://services1.arcgis.com/p84PN4WZvOWzi2j2/arcgis/rest/services/StreetLights/FeatureServer/0",{
@@ -1193,10 +1231,31 @@
             outFields: ["*"]
           });
           map.addLayer(featureLayer);
-          //Load-in barrier point
+
+          //Default
+          // showBufferZones();          
+        });
+        
+        function showBufferZones() {
+          console.log("showBufferZones() called");
+
+          clearAll();
+
+          for (var i = 0; i < data.length; i = i+4) {
+             console.log(data[i+2]+', '+data[i+1]+'\n');
+
+             addCircleBarrier(data[i+1], data[i+2], data[i+3]);
+           }
+        }
+
+        function showIcons() {
+          console.log("showIcons() called");
+
+          clearAll();
 
           //Create a new PictureMarkerSymbol based on the static image and set a few properties.
           //Change url to customize
+          // Create barriers
           barrierSymbol = new esri.symbol.PictureMarkerSymbol({
                                           "angle": 0,
                                           "xoffset": 0,
@@ -1208,33 +1267,24 @@
                                           "height": 24
                                           });
 
+          console.log("showIcons() middle");
+
           for (var i = 0; i < data.length; i = i+4) {
-           console.log(data[i+2]+', '+data[i+1]+'\n');
+            
+            //if(data[i+3] > 2) {
+              console.log(data[i+2]+', '+data[i+1]+'\n');
+              routeParams.barriers.features.push(
+                map.graphics.add(
+                  new esri.Graphic(
+                    new esri.geometry.Point(data[i+1], data[i+2]),
+                    barrierSymbol
+                  )
+                )
+              );
+            //}
+          }
+        }
 
-           addCircleBarrier(data[i+1], data[i+2], data[i+3]);
-
-           routeParams.barriers.features.push(
-             map.graphics.add(
-               new esri.Graphic(
-                 new esri.geometry.Point(data[i+2], data[i+1]),
-                 barrierSymbol
-               )
-             )
-           );
-         }
-
-          // var polygon = new esri.geometry.Polygon([
-          //   [[-118.457186,34.0298551],[-118.48,34.0298551],[-118.48,34.035],[-118.457186,34.0298551]]]);
-          // routeParams.polygonBarriers.features.push(  
-          //     map.graphics.add(
-          //       new esri.Graphic(
-          //         polygon,
-          //         polygonBarrierSymbol)
-          //       )  
-          //   );
-          
-        });
-        
       });
     </script>
 
@@ -1250,9 +1300,9 @@
     </div>
     <div id="routecreation">
       <button id="addStopsBtn">Add Stops</button>
-      <button id="clearStopsBtn">Clear Stops</button>
-      <button id="addBarriersBtn">Add Barriers</button>
-      <button id="clearBarriersBtn">Clear Barriers</button>
+      <button id="clearStopsBtn">Safe</button>
+      <button id="addBarriersBtn">Balance</button>
+      <button id="clearBarriersBtn">Fast</button>
       <button id="solveRoutesBtn">Solve Routes</button>
       <button id="clearRoutesBtn">Clear Routes</button>
     </div>
