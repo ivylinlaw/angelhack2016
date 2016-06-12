@@ -98,94 +98,6 @@
         on(dom.byId("clearBarriersBtn"), "click", clearBarriers);
         on(dom.byId("solveRoutesBtn"), "click", solveRoute);
         on(dom.byId("clearRoutesBtn"), "click", clearRoutes);
-
-
-        // Create barriers
-        map.on("load", function() {
-          // Create street lights
-          var featureLayer = new esri.layers.FeatureLayer("http://services1.arcgis.com/p84PN4WZvOWzi2j2/arcgis/rest/services/StreetLights/FeatureServer/0",{
-            mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
-            outFields: ["*"]
-          });
-          map.addLayer(featureLayer);
-
-          //Load-in barrier point
-          var pt = new esri.geometry.Point(-118.457186, 34.0298551);
-
-          routeParams.barriers.features.push(
-              map.graphics.add(
-                new esri.Graphic(
-                  pt,
-                  barrierSymbol
-                )
-              )
-            );
-
-          // var polygon = new esri.geometry.Polygon([
-          //   [[-118.457186,34.0298551],[-118.48,34.0298551],[-118.48,34.035],[-118.457186,34.0298551]]]);
-          // routeParams.polygonBarriers.features.push(  
-          //     map.graphics.add(
-          //       new esri.Graphic(
-          //         polygon,
-          //         polygonBarrierSymbol)
-          //       )  
-          //   );
-          
-        });
-
-        //Load-in barrier circle(polygon)
-        function drawCircleBarrier(long, lat, severity) {
-          //op as opacity
-          var op, radius;
-          if(severity == 1) {
-            op = 0.1;
-            radius = 0.0006;
-          }
-          else if(severity == 2) {
-            op = 0.25;
-            radius = 0.002;
-          }
-          else {
-            op = 0.5;
-            radius = 0.004;
-          }
-
-          polygonBarrierSymbol.setColor(new Color([0,0,255,op]));
-          polygonBarrierSymbol.setOutline(
-            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
-
-          var center = new esri.geometry.Point([long, lat]);
-          var ring = []; // point that make up the circle
-          var pts = 40; // number of points on the circle
-          var angle = 360 / pts; // used to compute points on the circle
-          for(var i = 1; i <= pts; i++) {
-            // convert angle to raidans
-            var radians = i * angle * Math.PI / 180;
-            // add point to the circle
-            ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
-            
-            //
-            console.log("x", center.x + radius * Math.cos(radians));
-            console.log("y", center.y + radius * Math.sin(radians));
-          } 
-
-          ring.push(ring[0]); // start point needs to == end point
-          var circle = new esri.geometry.Polygon(ring);
-          routeParams.polygonBarriers.features.push(  
-              map.graphics.add(
-                new esri.Graphic(
-                  circle,
-                  polygonBarrierSymbol)
-                )  
-            );
-        }
-
-        //Test draw circle(polygon)
-        map.on("load", function() {
-          drawCircleBarrier(-118.457186, 34.0298551, 1);
-        });
-
-
       
         //Begins listening for click events to add stops
         function addStops() {
@@ -206,7 +118,7 @@
           routeParams.stops.features.push(
             map.graphics.add(
               new esri.Graphic(
-                evt.mapPoint,
+                esolveRoutevt.mapPoint,
                 stopSymbol,
                 { RouteName:dom.byId("routeName").value }
               )
@@ -244,6 +156,63 @@
 
           //
           console.log("addBarrier", evt.mapPoint);
+        }
+
+        //Load-in barrier circle(polygon)
+        function addCircleBarrier(long, lat, severity) {
+          //op as opacity, radius as radius
+          var op, radius;
+          if(severity == 1) {
+            op = 0.1;
+            radius = 0.0006;
+          }
+          else if(severity == 2) {
+            op = 0.25;
+            radius = 0.002;
+          }
+          else {
+            op = 0.5;
+            radius = 0.004;
+          }
+
+          //Change circle color
+          polygonBarrierSymbol.setColor(new Color([0,0,255,op]));
+          //Change circle outline
+          polygonBarrierSymbol.setOutline(
+            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+
+          var center = new esri.geometry.Point([long, lat]);
+          var ring = []; // point that make up the circle
+          var pts = 40; // number of points on the circle
+          var angle = 360 / pts; // used to compute points on the circle
+          for(var i = 1; i <= pts; i++) {
+            // convert angle to raidans
+            var radians = i * angle * Math.PI / 180;
+            // add point to the circle
+            ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
+            
+            //
+            console.log("x", center.x + radius * Math.cos(radians));
+            console.log("y", center.y + radius * Math.sin(radians));
+          } 
+
+          ring.push(ring[0]); // start point needs to == end point
+          var circle = new esri.geometry.Polygon(ring);
+          routeParams.polygonBarriers.features.push(  
+              map.graphics.add(
+                new esri.Graphic(
+                  circle,
+                  polygonBarrierSymbol)
+                )  
+            );
+        }
+
+        //Remove all circle(polygon) barriers
+        function clearCircleBarrier() {
+          removeEventHandlers();
+          for (var i=routeParams.polygonBarriers.features.length-1; i>=0; i--) {
+            map.graphics.remove(routeParams.polygonBarriers.features.splice(i, 1)[0]);
+          }
         }
 
         //Stops listening for click events to add barriers and stops (if they've already been wired)
@@ -305,6 +274,46 @@
         function errorHandler(err) {
           alert("An error occured\n" + err.message + "\n" + err.details.join("\n"));
         }
+
+        // Create barriers
+        map.on("load", function() {
+          // Create street lights
+          var featureLayer = new esri.layers.FeatureLayer("http://services1.arcgis.com/p84PN4WZvOWzi2j2/arcgis/rest/services/StreetLights/FeatureServer/0",{
+            mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
+            outFields: ["*"]
+          });
+          map.addLayer(featureLayer);
+
+          //Load-in barrier point
+          var pt = new esri.geometry.Point(-118.457186, 34.0298551);
+
+          routeParams.barriers.features.push(
+              map.graphics.add(
+                new esri.Graphic(
+                  pt,
+                  barrierSymbol
+                )
+              )
+            );
+
+          // var polygon = new esri.geometry.Polygon([
+          //   [[-118.457186,34.0298551],[-118.48,34.0298551],[-118.48,34.035],[-118.457186,34.0298551]]]);
+          // routeParams.polygonBarriers.features.push(  
+          //     map.graphics.add(
+          //       new esri.Graphic(
+          //         polygon,
+          //         polygonBarrierSymbol)
+          //       )  
+          //   );
+          
+        });
+
+        //***Test draw circle(polygon)***
+        map.on("load", function() {
+          // addCircleBarrier(-118.457186, 34.0298551, 1);
+          addCircleBarrier(-118.457186, 34.0298551, 2);
+          // addCircleBarrier(-118.457186, 34.0298551, 3);
+        });
       });
     </script>
 
