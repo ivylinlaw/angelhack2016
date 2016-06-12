@@ -1063,40 +1063,44 @@
           removeEventHandlers();
           mapOnClick_addBarriers_connect = on(map, "click", addBarrier);
         }
-        //Clears all barriers
+        //Fast mode
         function clearBarriers() {
-          // clearAll();
+          removeEventHandlers();
+          for (var i=routeParams.barriers.features.length-1; i>=0; i--) {
+            map.graphics.remove(routeParams.barriers.features.splice(i, 1)[0]);
+          }
+          clearCircleBarrier();
 
-          // //Create a new PictureMarkerSymbol based on the static image and set a few properties.
-          // //Change url to customize
-          // // Create barriers
-          // barrierSymbol = new esri.symbol.PictureMarkerSymbol({
-          //                                 "angle": 0,
-          //                                 "xoffset": 0,
-          //                                 "yoffset": 12,
-          //                                 "type": "esriPMS",
-          //                                 "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
-          //                                 "contentType": "image/png",
-          //                                 "width": 24,
-          //                                 "height": 24
-          //                                 });
+          //Create a new PictureMarkerSymbol based on the static image and set a few properties.
+          //Change url to customize
+          // Create barriers
+          barrierSymbol = new esri.symbol.PictureMarkerSymbol({
+                                          "angle": 0,
+                                          "xoffset": 0,
+                                          "yoffset": 12,
+                                          "type": "esriPMS",
+                                          "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
+                                          "contentType": "image/png",
+                                          "width": 24,
+                                          "height": 24
+                                          });
 
-          // console.log("showIcons() middle");
+          console.log("showIcons() middle");
 
-          // for (var i = 0; i < data.length; i = i+4) {
+          for (var i = 0; i < data.length; i = i+4) {
             
-          //   if(data[i+3] > 2) {
-          //     console.log(data[i+2]+', '+data[i+1]+'\n');
-          //     routeParams.barriers.features.push(
-          //       map.graphics.add(
-          //         new esri.Graphic(
-          //           new esri.geometry.Point(data[i+1], data[i+2]),
-          //           barrierSymbol
-          //         )
-          //       )
-          //     );
-          //   }
-          // }
+            if(data[i+3] > 2) {
+              console.log(data[i+2]+', '+data[i+1]+'\n');
+              routeParams.barriers.features.push(
+                map.graphics.add(
+                  new esri.Graphic(
+                    new esri.geometry.Point(data[i+1], data[i+2]),
+                    barrierSymbol
+                  )
+                )
+              );
+            }
+          }
         }
         //Adds a barrier
         function addBarrier(evt) {
