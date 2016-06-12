@@ -21,7 +21,7 @@
 
         "esri/tasks/FeatureSet",            
         "esri/symbols/SimpleMarkerSymbol",
-        "esri/symbols/SimpleLineSymbol",          
+        "esri/symbols/SimpleLineSymbol",       
 
         "esri/Color",
         "dojo/_base/array",
@@ -82,22 +82,21 @@
         on(dom.byId("solveRoutesBtn"), "click", solveRoute);
         on(dom.byId("clearRoutesBtn"), "click", clearRoutes);  
 
+        // Create barriers
         map.on("load", function() {
-          // Create barriers
+          //Load-in barrier point
+          var pt = new esri.geometry.Point(-122.416, 37.802);
+
           routeParams.barriers.features.push(
               map.graphics.add(
                 new esri.Graphic(
-                  {
-                    type: "point",
-                    x: -13627535.20529108,
-                    y: 4551640.78645685,
-                    spatialReference: Object
-                  },
+                  pt,
                   barrierSymbol
                 )
               )
             );
-        });    
+        });
+
       
         //Begins listening for click events to add stops
         function addStops() {
