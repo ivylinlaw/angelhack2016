@@ -6,12 +6,10 @@ body {
 	display:block;
 	float: left;
 	margin-bottom: 30px;
-	outline: #000 solid 1px;
 	background-color: black;
 }
 
 #extrasettings {
-	margin-top: 120px;
 	margin-left: 15px;
 	margin-right:15px;
 	padding: 0px 5px 5px 10px;
@@ -24,7 +22,7 @@ body {
 #map {
 	position:relative;
 	float: left;
-	
+	display:block;
 }
 
 #safefast {
@@ -32,7 +30,7 @@ body {
 	float: left;
 	margin-left: 50px;
 	margin-right: 140px;
-	
+	outline: black solid 2px;
 }
 
 #routecreation {	
@@ -53,7 +51,6 @@ body {
 }
 
 button {
-	margin: 0 10px;
 	font-size: 10pt;
 	height: 20px;
 	background-color: #dcdcdc;
@@ -61,3 +58,45 @@ button {
 	color:#000;
 	text-decoration:none;
 }
+
+#rightControlPanel {
+	display:block;
+	float: left;
+position:relative;
+}
+
+#addStopsBtn {
+margin-top:60px;
+width: 100%;
+outline: white solid 3px;
+margin-left:auto;
+margin-right:auto;
+height: 40px;
+font-size: 20pt;
+margin-bottom: 50px;
+background: green;
+}
+
+#uh2 {
+position: relative;
+float: left;
+display:block;
+width: 100%;
+}
+
+#clearRoutesBtn {
+margin-left:35%;
+margin-right:auto;
+height: 40px;
+font-size: 15pt;
+background: red;
+margin-bottom: 30px;
+}
+
+
+
+#uh1 {
+outline: red solid 1px;
+width: 350px;
+}
+
