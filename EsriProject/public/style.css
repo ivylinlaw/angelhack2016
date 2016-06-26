@@ -1,102 +1,61 @@
-body {
-	font-family: Arial, Helvetica, San-serif;
-}
-
 #centerpage {
-	display:block;
-	float: left;
-	margin-bottom: 30px;
-	background-color: black;
+	position: relative;
+	height: 568px;
+	width: 320px;
+	outline: black solid 1px;
+	margin: 0 auto;
 }
 
-#extrasettings {
-	margin-left: 15px;
-	margin-right:15px;
-	padding: 0px 5px 5px 10px;
-	position:relative;
-	float: left;
-	
+#routeNameForm {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width:200px;
+	font-size: .75em;
+
+	font-family: "Times New Roman", Times, serif;
+	color: white;
+	background:rgba(0,0,0, 0.3);
+}
+
+.esriSimpleSliderTL {
+    top: 200px;
+    left: 5px;
+}
+
+.esriSimpleSlider {
+	background:rgba(255,255,255, 0.3);
+}
+
+#extraSettings {
+	position: absolute;
+	top: 0px;
+	right:0px;
+	background:rgba(0,0,0, 0.3);
+	font-size: .75em;
+	font-family: "Times New Roman", Times, serif;
 	color: white;
 }
 
-#map {
-	position:relative;
-	float: left;
-	display:block;
-}
-
-#safefast {
-	display:block;
-	float: left;
-	margin-left: 50px;
-	margin-right: 140px;
-	outline: black solid 2px;
-}
-
-#routecreation {	
-	margin-bottom: 10px;
-}
-
-#routeName{
-    border: 0;
-    box-shadow: none;
-    font-size: 10pt;
-}
-
-#erroralert {
-    float: left;
-    clear: left;
-    display:inline
-    outline: #000 solid 1px;
-}
-
-button {
-	font-size: 10pt;
-	height: 20px;
-	background-color: #dcdcdc;
-	border: 0;
-	color:#000;
-	text-decoration:none;
-}
-
-#rightControlPanel {
-	display:block;
-	float: left;
-position:relative;
-}
-
 #addStopsBtn {
-margin-top:60px;
-width: 100%;
-outline: white solid 3px;
-margin-left:auto;
-margin-right:auto;
-height: 40px;
-font-size: 20pt;
-margin-bottom: 50px;
-background: green;
-}
-
-#uh2 {
-position: relative;
-float: left;
-display:block;
-width: 100%;
+	position: absolute;
+	background-color: green;
+	font-family: "Times New Roman", Times, serif;
+	color: black;
+	bottom: 35px;
+	left: 79px;
 }
 
 #clearRoutesBtn {
-margin-left:35%;
-margin-right:auto;
-height: 40px;
-font-size: 15pt;
-background: red;
-margin-bottom: 30px;
+	position: absolute;
+	background-color: red;
+	font-family: "Times New Roman", Times, serif;
+	color: white;
+	bottom: 5px;
+	left: 110px;
 }
 
-
-
-#uh1 {
-outline: red solid 1px;
-width: 350px;
+#routeCreation {
+	position: absolute;
+	bottom: 10px;
 }
-
