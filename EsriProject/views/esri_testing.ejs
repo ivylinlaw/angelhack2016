@@ -34,13 +34,17 @@ require( [
   "esri/tasks/RouteParameters",
   "esri/tasks/FeatureSet",            
   "esri/symbols/SimpleMarkerSymbol",
-  "esri/symbols/SimpleLineSymbol",  
+  "esri/symbols/SimpleLineSymbol",
+  "esri/symbols/SimpleFillSymbol",  
   "esri/Color",
   "dojo/_base/array",
   "dojo/on",
   "dojo/dom",
   "dijit/registry",
   "dojo/query",
+  "esri/geometry/webMercatorUtils",
+  "esri/geometry/Circle",
+  "esri/geometry/Point",
   "esri/tasks/geometry",
   "esri/units",
   "dijit/layout/BorderContainer",
@@ -49,8 +53,8 @@ require( [
   "dijit/form/HorizontalRuleLabels"
   ], function (
     urlUtils, esriConfig, Map, Graphic, RouteTask, RouteParameters,
-    FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol,           
-    Color, array, on, dom, registry, djQuery
+    FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,          
+    Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point
     ) {
     var data = [
     "Disturbance of the Peace",-118.4838611,34.01306945,1,
@@ -110,9 +114,10 @@ require( [
     "Trespassing",-118.5006528,34.01718056,3
     ];
     var map, routeTask, routeParams, routes = [];
-    var stopSymbol, barrierSymbol, routeSymbols, polygonBarrierSymbol;
+    var stopSymbol, barrierSymbol, barrierSymbol1, routeSymbols, polygonBarrierSymbol;
     var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect;
     var stopCounter = 0;
+    var barrierToggle = 0;
          //urlUtils.addProxyRule({
          // urlPrefix: "route.arcgis.com",  
          // proxyUrl: "/sproxy/"
@@ -167,6 +172,8 @@ require( [
           "height": 15
         });
 
+        var barrierSymbol1 = new SimpleFillSymbol().setColor(null).outline.setColor("blue");
+
 
         routeSymbols = {
           "Route 1": new SimpleLineSymbol().setColor(new Color([0,255,0,0.5])).setWidth(5),
@@ -179,11 +186,25 @@ require( [
         
 
         
-        on(dom.byId("addStopsBtn"), "click", addStops);
-        on(dom.byId("clearStopsBtn"), "click", clearStops);
-        on(dom.byId("addBarriersBtn"), "click", addBarriers);
-        on(dom.byId("clearBarriersBtn"), "click", clearBarriers);
-        on(dom.byId("solveRoutesBtn"), "click", solveRoute);
+        //on(dom.byId("addStopsBtn"), "click", addStops);
+        $("#addStopsBtn").click( function () {
+          addStops();
+        });
+        //on(dom.byId("clearStopsBtn"), "click", clearStops);
+        //on(dom.byId("addBarriersBtn"), "click", addBarriers);
+        $("#addBarriersBtn").click( function () {
+          if(barrierToggle==0) {
+            $(this).css('background','orange');
+            addBarriers();
+            barrierToggle=1;
+          } else if(barrierToggle ==1) {
+            $(this).css('background','rgba(0,0,0, 0.3)');
+            removeEventHandlers();
+            barrierToggle=0;
+          }
+        });
+        //on(dom.byId("clearBarriersBtn"), "click", clearBarriers);
+        //on(dom.byId("solveRoutesBtn"), "click", solveRoute);
         //on(dom.byId("clearRoutesBtn"), "click", clearRoutes);
         $("#clearRoutesBtn").click( function () {
           clearStops();
@@ -253,7 +274,7 @@ require( [
         //Begins listening for click events to add barriers
         function addBarriers() {
           removeEventHandlers();
-          mapOnClick_addBarriers_connect = on(map, "click", addBarrier);
+          mapOnClick_addBarriers_connect = on(map, "click", addBarrier1); //change to addBarrier1 once process completed
         }
         //Fast mode
         function clearBarriers() {
@@ -278,7 +299,7 @@ require( [
           console.log("showIcons() middle");
 
           //This creates pins in place of existing barriers. Might be useful later...
-          
+
           /*
           for (var i = 0; i < data.length; i = i+4) {
 
@@ -299,6 +320,7 @@ require( [
         }
         //Adds a barrier
         function addBarrier(evt) {
+
           routeParams.barriers.features.push(
             map.graphics.add(
               new esri.Graphic(
@@ -307,9 +329,79 @@ require( [
                 )
               )
             );
+            
+
+            
           //
           console.log("addBarrier", evt.mapPoint);
         }
+
+
+
+          function addBarrier1(evt) {
+          var latLongEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
+          var severityEvt = $("input[name=severityRadioButtons]:checked").val();
+          addCircleBarrier(latLongEvt[0],latLongEvt[1],severityEvt);
+          
+          /*
+          routeParams.barriers.features.push(
+            map.graphics.add(
+              new esri.Graphic(
+                evt.mapPoint,
+                barrierSymbol
+                )
+              )
+            );
+            */
+
+            
+          //
+          console.log("addBarrier1", evt.mapPoint);
+        }
+       //Load-in barrier circle(polygon)
+        function addCircleBarrier1(long, lat, severity) {
+          //op as opacity, radius as radius
+
+
+          var op, radius;
+          if(severity == 1) {
+            op = 0.05;
+            radius = 0.0004;
+          }
+          else if(severity == 2) {
+            op = 0.15;
+            radius = 0.0007;
+          }
+          else {
+            op = 0.25;
+            radius = 0.001;
+          }
+
+          console.log("The op is " + op);
+          console.log("The radius is " + radius);
+          console.log("The severity is " + severity);
+          //Change circle color
+          polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
+          //Change circle outline
+          polygonBarrierSymbol.setOutline(
+            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+          var center = new esri.geometry.Point([long, lat]);
+
+
+
+          var circle = new Circle(center, {
+            "radius": radius
+          });
+          var graphic = new Graphic(circle,polygonBarrierSymbol);
+          console.log(circle.radius);
+          routeParams.polygonBarriers.features.push(  
+            map.graphics.add(graphic)  
+            );
+        }
+
+
+
+
         //Load-in barrier circle(polygon)
         function addCircleBarrier(long, lat, severity) {
           //op as opacity, radius as radius
@@ -342,8 +434,8 @@ require( [
             ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
             
             //
-            console.log("x", center.x + radius * Math.cos(radians));
-            console.log("y", center.y + radius * Math.sin(radians));
+            //console.log("x", center.x + radius * Math.cos(radians));
+            //console.log("y", center.y + radius * Math.sin(radians));
           } 
           ring.push(ring[0]); // start point needs to == end point
           var circle = new esri.geometry.Polygon(ring);
@@ -485,35 +577,29 @@ require( [
     <div id="centerpage">
       <div id="map" style="width:320px; height:586px;"></div>
       <div id="safefast"> 
-
         <form id="routeNameForm">
           <input type="radio" name="routeRadioButtons" id="route1" checked value="Route 1"/> <label for="route1">Safe</label>
           <input type="radio" name="routeRadioButtons" id="route2" unchecked value="Route 2"/> <label for="route2">Balanced</label>
           <input type="radio" name="routeRadioButtons" id="route3" unchecked value="Route 3"/> <label for="route3">Fast</label>
         </form>
-
-
-
       </div>
-      <div id="routecreation">
-
-        <button id="clearStopsBtn">-</button>
-        <button id="addBarriersBtn">Add Barriers</button>
-        <button id="clearBarriersBtn">-</button>
-        <button id="solveRoutesBtn">-</button>
-
-      </div>
-
+      <button id="addBarriersBtn">Add Barriers</button>
+      <form id="severityForm">
+          <input type="radio" name="severityRadioButtons" id="severity1" checked value="1"/> <label for="severity1">1</label>
+          <input type="radio" name="severityRadioButtons" id="severity2" unchecked value="2"/> <label for="severity2">2</label>
+          <input type="radio" name="severityRadioButtons" id="severity3" unchecked value="3"/> <label for="severity3">3</label>
+      </form>
 
       <div id="rightControlPanel">
-          <button id="addStopsBtn">Click Here To Begin!</button>
-          <button id="clearRoutesBtn">Clear Routes</button>
-        <div id="uh2">
+        <button id="addStopsBtn">Click Here To Begin!</button>
+        <button id="clearRoutesBtn">Clear Screen</button>
+        <div id="rightToolbar">
           <form id="extraSettings">
             <input type="radio" name="myRadioButtons" id="bufferzone" value="1" checked/> <label for="bufferzone">Buffer Zone</label><br/>
             <input type="radio" name="myRadioButtons" id="icons" value="2" unchecked/> <label for="icons">Icons</label><br/><br/>
             <input type="checkbox" checked="checked" id="streetlights" unchecked /> <label for="streetlights">Street Lights</label><br/>
           </form>
+          
         </div>
       </div>
     </div>
