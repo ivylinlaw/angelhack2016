@@ -16,7 +16,10 @@
       parseOnLoad: true
     };
   </script>
-  <script src="https://js.arcgis.com/3.16/"></script>
+
+
+    <script src="https://js.arcgis.com/3.16/"></script>
+
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
   <script>
@@ -45,6 +48,9 @@ require( [
   "esri/geometry/webMercatorUtils",
   "esri/geometry/Circle",
   "esri/geometry/Point",
+  "dojo/request",
+  "dojo/request/xhr",
+  "dojo/ready",
   "esri/tasks/geometry",
   "esri/units",
   "dijit/layout/BorderContainer",
@@ -54,7 +60,7 @@ require( [
   ], function (
     urlUtils, esriConfig, Map, Graphic, RouteTask, RouteParameters,
     FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,          
-    Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point
+    Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point, request, xhr,ready
     ) {
     var data = [
     "Disturbance of the Peace",-118.4838611,34.01306945,1,
@@ -118,6 +124,7 @@ require( [
     var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect;
     var stopCounter = 0;
     var barrierToggle = 0;
+    
          //urlUtils.addProxyRule({
          // urlPrefix: "route.arcgis.com",  
          // proxyUrl: "/sproxy/"
@@ -133,6 +140,87 @@ require( [
 
         }
         );
+
+
+
+        //uploading csv data
+ready(function() {
+      xhr.get("SantaMonicaCrime.csv", {
+        handleAs: "text",
+    }).then(function(data1) {
+        globalvariable = data1;
+        $("#severity1").prop("disabled",false);
+    });
+});
+console.log(globalvariable);
+
+////THIS IS THE LAST THING I CHANGED...
+
+var globalvariable = "bacon";
+$.ajax({
+  url:'smCrimeData.csv',
+  type: 'GET',
+  success: function (data) {
+    globalvariable = data;
+    //
+  }
+});
+//The globalvariable below is only going to be available after ajax request is successful.
+
+
+
+    //HPE Data upload
+
+var objectdata = {apikey : "385bcd30-9d17-4037-917f-442c08e82b78", file : "/../public/SMCrimeBeatData.csv"/*"https://drive.google.com/uc?export=download&id=0BxioPUqqdZqReExzdWZYc2tfZFE"*/, max_results: 5, columns: ["Call_Type","Location"]}
+$.ajax({
+
+        url: "https://api.havenondemand.com/1/api/sync/anomalydetection/v1",
+        type: 'POST',
+        dataType: 'json',
+        async: false,
+        data: objectdata,
+        success: function (results, textStatus, xhr) {
+          console.log("test passed");
+          console.log(results);
+
+
+          // for(var i; i< results.length; i++){
+          //   console.log(results[i]);
+          // }
+
+        },
+
+        error: function (xhr, textStatus, errorThrown) {
+            console.log("test failed");
+            console.log("ERROR:" + xhr.responseText + xhr.status + errorThrown);
+
+            
+
+            return false;
+
+        }
+
+    });
+
+
+// // generate a token with your client id and client secret
+// request.post({
+//     url: 'https://www.arcgis.com/sharing/rest/oauth2/token/',
+//     json: true,
+//     form: {
+//       'f': 'json',
+//       'client_id': '9gdUoBaoDjP5INej',
+//       'client_secret': 'd2368d00106f46ec9e6d5bd9b069704a',
+//       'grant_type': 'client_credentials',
+//       'expiration': '1440'
+//     }
+// }, function(error, response, body){
+// console.log(error);
+//     console.log(body.access_token);
+// });
+
+
+//spH-4ut_taI6YRCYqbz4a1KWiK9Psdy2HaDAcNcq3z3yhLy0BdhPovt0mNRis3DbZlxDaT0t633lZlqhNZvptV5YHkKw_dmY5b00Xp2b6k1EC452t0q2GV2olqlK3RZux1ROFGIWnTpePUz2FON0rg..
 
 
         routeTask = new RouteTask("https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World");
@@ -183,7 +271,8 @@ require( [
 
         //button click event listeners can't be added directly in HTML when the code is wrapped in an AMD callback
 
-        
+        //using APIs?
+
 
         
         //on(dom.byId("addStopsBtn"), "click", addStops);
@@ -210,6 +299,8 @@ require( [
           clearStops();
           clearBarriers();
           clearRoutes();
+          console.log(globalvariable);
+
         });
         on(dom.byId("bufferzone"), "click", showBufferZones);
         on(dom.byId("icons"), "click", showIcons);
@@ -585,7 +676,7 @@ require( [
       </div>
       <button id="addBarriersBtn">Add Barriers</button>
       <form id="severityForm">
-          <input type="radio" name="severityRadioButtons" id="severity1" checked value="1"/> <label for="severity1">1</label>
+          <input type="radio" name="severityRadioButtons" id="severity1" checked value="1" disabled="true"/> <label for="severity1">1</label>
           <input type="radio" name="severityRadioButtons" id="severity2" unchecked value="2"/> <label for="severity2">2</label>
           <input type="radio" name="severityRadioButtons" id="severity3" unchecked value="3"/> <label for="severity3">3</label>
       </form>
