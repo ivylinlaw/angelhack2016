@@ -24,7 +24,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
   <script>
 
-//var http = require('http');
+
 
 
 require( [
@@ -124,11 +124,12 @@ require( [
     var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect;
     var stopCounter = 0;
     var barrierToggle = 0;
+    var sortedData;
     
-         //urlUtils.addProxyRule({
-         // urlPrefix: "route.arcgis.com",  
-         // proxyUrl: "/sproxy/"
-        //});
+        //  urlUtils.addProxyRule({
+        //  urlPrefix: "route.arcgis.com",  
+        //  proxyUrl: "/sproxy/"
+        // });
         
 
         map = new Map("map", {
@@ -145,26 +146,70 @@ require( [
 
         //uploading csv data
 ready(function() {
-      xhr.get("SantaMonicaCrime.csv", {
+      xhr.get("SantaMonicaCrime1.csv", {
         handleAs: "text",
-    }).then(function(data1) {
-        globalvariable = data1;
+    }).then(function(data) {
+        globalvariable = data.split(",");
+        sortedData = filterBySeverity(globalvariable);
         $("#severity1").prop("disabled",false);
     });
+
+        $("#addStopsBtn").click( function () {
+          addStops();
+        });
+
+        $("#addBarriersBtn").click( function () {
+          if(barrierToggle==0) {
+            $(this).css('background','orange');
+            addBarriers();
+            barrierToggle=1;
+          } else if(barrierToggle ==1) {
+            $(this).css('background','rgba(0,0,0, 0.3)');
+            removeEventHandlers();
+            barrierToggle=0;
+          }
+        });
+
+        $("#clearRoutesBtn").click( function () {
+          clearStops();
+          clearBarriers();
+          clearRoutes();
+          console.log(globalvariable);
+
+        });
+
+        $("#bufferzone").click( function () {
+
+          showBufferZones(sortedData);
+        });
+
+        $("#icons").click( function () {
+          showIcons();
+        });
+
+        $("#routeNameForm").click( function() {
+          sortedData = filterBySeverity(globalvariable);
+          if($("#bufferzone").is(':checked')) {
+            showBufferZones(sortedData);
+          }
+        })
+
+
+
 });
-console.log(globalvariable);
+
 
 ////THIS IS THE LAST THING I CHANGED...
 
-var globalvariable = "bacon";
-$.ajax({
-  url:'smCrimeData.csv',
-  type: 'GET',
-  success: function (data) {
-    globalvariable = data;
-    //
-  }
-});
+// var globalvariable = "bacon";
+// $.ajax({
+//   url:'smCrimeData.csv',
+//   type: 'GET',
+//   success: function (data) {
+//     globalvariable = data;
+//     //
+//   }
+// });
 //The globalvariable below is only going to be available after ajax request is successful.
 
 
@@ -172,39 +217,64 @@ $.ajax({
     //HPE Data upload
 
 var objectdata = {apikey : "385bcd30-9d17-4037-917f-442c08e82b78", file : "/../public/SMCrimeBeatData.csv"/*"https://drive.google.com/uc?export=download&id=0BxioPUqqdZqReExzdWZYc2tfZFE"*/, max_results: 5, columns: ["Call_Type","Location"]}
-$.ajax({
+// $.ajax({
 
-        url: "https://api.havenondemand.com/1/api/sync/anomalydetection/v1",
-        type: 'POST',
-        dataType: 'json',
-        async: false,
-        data: objectdata,
-        success: function (results, textStatus, xhr) {
-          console.log("test passed");
-          console.log(results);
+//         url: "https://api.havenondemand.com/1/api/sync/anomalydetection/v1",
+//         type: 'POST',
+//         dataType: 'json',
+//         async: false,
+//         data: objectdata,
+//         success: function (results, textStatus, xhr) {
+//           console.log("test passed");
+//           console.log(results);
 
 
-          // for(var i; i< results.length; i++){
-          //   console.log(results[i]);
-          // }
+//           // for(var i; i< results.length; i++){
+//           //   console.log(results[i]);
+//           // }
 
-        },
+//         },
 
-        error: function (xhr, textStatus, errorThrown) {
-            console.log("test failed");
-            console.log("ERROR:" + xhr.responseText + xhr.status + errorThrown);
+//         error: function (xhr, textStatus, errorThrown) {
+//             console.log("test failed");
+//             console.log("ERROR:" + xhr.responseText + xhr.status + errorThrown);
 
             
 
-            return false;
+//             return false;
 
-        }
+//         }
 
-    });
+//     });
 
+function filterBySeverity(data) {
+  var sortCounter = 0;
+  var filteredData = [];
+  var currentSeverity = $("input[name=routeRadioButtons]:checked").val();
+  var bufferSeverity;
+  if(currentSeverity == "Route 1"){
+    bufferSeverity = 1;
+  } else if(currentSeverity == "Route 2"){
+    bufferSeverity = 2;
+  } else if(currentSeverity == "Route 3"){
+    bufferSeverity = 3;
+  }
+  console.log(bufferSeverity + " " + currentSeverity);
 
-// // generate a token with your client id and client secret
-// request.post({
+  for(var i = 4; i < data.length; i += 4){
+    if(data[i+3]==bufferSeverity){
+      filteredData[sortCounter] = data[i];
+      filteredData[sortCounter+1] = Number(data[i+1]); 
+      filteredData[sortCounter+2] = Number(data[i+2]); 
+      filteredData[sortCounter+3] = Number(data[i+3]);
+      sortCounter += 4;
+    }
+  }
+
+  return filteredData;
+}
+//generate a token with your client id and client secret
+// $.ajax({
 //     url: 'https://www.arcgis.com/sharing/rest/oauth2/token/',
 //     json: true,
 //     form: {
@@ -218,6 +288,7 @@ $.ajax({
 // console.log(error);
 //     console.log(body.access_token);
 // });
+
 
 
 //spH-4ut_taI6YRCYqbz4a1KWiK9Psdy2HaDAcNcq3z3yhLy0BdhPovt0mNRis3DbZlxDaT0t633lZlqhNZvptV5YHkKw_dmY5b00Xp2b6k1EC452t0q2GV2olqlK3RZux1ROFGIWnTpePUz2FON0rg..
@@ -276,34 +347,15 @@ $.ajax({
 
         
         //on(dom.byId("addStopsBtn"), "click", addStops);
-        $("#addStopsBtn").click( function () {
-          addStops();
-        });
+
         //on(dom.byId("clearStopsBtn"), "click", clearStops);
         //on(dom.byId("addBarriersBtn"), "click", addBarriers);
-        $("#addBarriersBtn").click( function () {
-          if(barrierToggle==0) {
-            $(this).css('background','orange');
-            addBarriers();
-            barrierToggle=1;
-          } else if(barrierToggle ==1) {
-            $(this).css('background','rgba(0,0,0, 0.3)');
-            removeEventHandlers();
-            barrierToggle=0;
-          }
-        });
+
         //on(dom.byId("clearBarriersBtn"), "click", clearBarriers);
         //on(dom.byId("solveRoutesBtn"), "click", solveRoute);
         //on(dom.byId("clearRoutesBtn"), "click", clearRoutes);
-        $("#clearRoutesBtn").click( function () {
-          clearStops();
-          clearBarriers();
-          clearRoutes();
-          console.log(globalvariable);
 
-        });
-        on(dom.byId("bufferzone"), "click", showBufferZones);
-        on(dom.byId("icons"), "click", showIcons);
+
 
         //Begins listening for click events to add stops
         function addStops() {
@@ -377,17 +429,20 @@ $.ajax({
           //Create a new PictureMarkerSymbol based on the static image and set a few properties.
           //Change url to customize
           // Create barriers
-          barrierSymbol = new esri.symbol.PictureMarkerSymbol({
-            "angle": 0,
-            "xoffset": 0,
-            "yoffset": 12,
-            "type": "esriPMS",
-            "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
-            "contentType": "image/png",
-            "width": 24,
-            "height": 24
-          });
-          console.log("showIcons() middle");
+
+          //11:20-not sure if this is supposed to be here?
+
+          // barrierSymbol = new esri.symbol.PictureMarkerSymbol({
+          //   "angle": 0,
+          //   "xoffset": 0,
+          //   "yoffset": 12,
+          //   "type": "esriPMS",
+          //   "url": "http://static.arcgis.com/images/Symbols/Basic/YellowStickpin.png",
+          //   "contentType": "image/png",
+          //   "width": 24,
+          //   "height": 24
+          // });
+          // console.log("showIcons() middle");
 
           //This creates pins in place of existing barriers. Might be useful later...
 
@@ -455,6 +510,7 @@ $.ajax({
 
 
           var op, radius;
+
           if(severity == 1) {
             op = 0.05;
             radius = 0.0004;
@@ -498,17 +554,18 @@ $.ajax({
           //op as opacity, radius as radius
           var op, radius;
           if(severity == 1) {
-            op = 0.05;
+            op = 0.15;
             radius = 0.0004;
           }
           else if(severity == 2) {
-            op = 0.15;
+            op = 0.20;
             radius = 0.0007;
           }
           else {
             op = 0.25;
             radius = 0.001;
           }
+          
           //Change circle color
           polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
           //Change circle outline
@@ -538,6 +595,8 @@ $.ajax({
               )  
             );
         }
+
+
         //Remove all circle(polygon) barriers
         function clearCircleBarrier() {
           removeEventHandlers();
@@ -618,14 +677,17 @@ $.ajax({
           // showBufferZones();          
         });
 
-        function showBufferZones() {
+        function showBufferZones(dataz) {
           console.log("showBufferZones() called");
           clearAll();
-          for (var i = 0; i < data.length; i = i+4) {
-           console.log(data[i+2]+', '+data[i+1]+'\n');
-           addCircleBarrier(data[i+1], data[i+2], data[i+3]);
+          for (var i = 0; i < dataz.length; i = i+4) {
+           addCircleBarrier(dataz[i+2], dataz[i+1], dataz[i+3]);
          }
        }
+
+
+
+
        function showIcons() {
         console.log("showIcons() called");
         clearAll();
