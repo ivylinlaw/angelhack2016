@@ -507,42 +507,47 @@ function filterBySeverity(data) {
        //Load-in barrier circle(polygon)
         function addCircleBarrier1(long, lat, severity) {
           //op as opacity, radius as radius
-
-
           var op, radius;
-
           if(severity == 1) {
-            op = 0.05;
+            op = 0.15;
             radius = 0.0004;
           }
           else if(severity == 2) {
-            op = 0.15;
+            op = 0.20;
             radius = 0.0007;
           }
           else {
             op = 0.25;
             radius = 0.001;
           }
-
-          console.log("The op is " + op);
-          console.log("The radius is " + radius);
-          console.log("The severity is " + severity);
+          
           //Change circle color
           polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
           //Change circle outline
           polygonBarrierSymbol.setOutline(
-            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+          new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
           var center = new esri.geometry.Point([long, lat]);
-
-
-
-          var circle = new Circle(center, {
-            "radius": radius
-          });
-          var graphic = new Graphic(circle,polygonBarrierSymbol);
-          console.log(circle.radius);
+          var ring = []; // point that make up the circle
+          var pts = 10; // number of points on the circle
+          var angle = 360 / pts; // used to compute points on the circle
+          for(var i = 1; i <= pts; i++) {
+            // convert angle to raidans
+            var radians = i * angle * Math.PI / 180;
+            // add point to the circle
+            ring.push([center.x + radius * Math.cos(radians), center.y + radius * Math.sin(radians)]);
+            
+            //
+            //console.log("x", center.x + radius * Math.cos(radians));
+            //console.log("y", center.y + radius * Math.sin(radians));
+          } 
+          ring.push(ring[0]); // start point needs to == end point
+          var circle = new esri.geometry.Polygon(ring);
           routeParams.polygonBarriers.features.push(  
-            map.graphics.add(graphic)  
+            map.graphics.add(
+              new esri.Graphic(
+                circle,
+                polygonBarrierSymbol)
+              )  
             );
         }
 
@@ -570,10 +575,10 @@ function filterBySeverity(data) {
           polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
           //Change circle outline
           polygonBarrierSymbol.setOutline(
-            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+          new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
           var center = new esri.geometry.Point([long, lat]);
           var ring = []; // point that make up the circle
-          var pts = 40; // number of points on the circle
+          var pts = 10; // number of points on the circle
           var angle = 360 / pts; // used to compute points on the circle
           for(var i = 1; i <= pts; i++) {
             // convert angle to raidans
