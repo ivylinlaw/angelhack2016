@@ -31,6 +31,7 @@ require( [
   "esri/IdentityManager",            
   "esri/tasks/RouteTask",            
   "esri/tasks/RouteParameters",
+  "esri/tasks/RouteResult",
   "esri/tasks/FeatureSet",            
   "esri/symbols/SimpleMarkerSymbol",
   "esri/symbols/SimpleLineSymbol",
@@ -54,7 +55,7 @@ require( [
   "dijit/form/HorizontalSlider",
   "dijit/form/HorizontalRuleLabels"
   ], function (
-    urlUtils, esriConfig, Map, Graphic, esriId, RouteTask, RouteParameters,
+    urlUtils, esriConfig, Map, Graphic, esriId, RouteTask, RouteParameters, RouteResult,
     FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,          
     Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point, request, xhr,ready
     ) {
@@ -122,6 +123,7 @@ require( [
     var barrierToggle = 0;
     var sortedData;
     var plotCount = 0;
+    var routeResults;
     
         //  urlUtils.addProxyRule({
         //  urlPrefix: "route.arcgis.com",  
@@ -176,6 +178,10 @@ ready(function() {
           if($("#bufferzone").is(':checked')) {
             showBufferZones(sortedData);
           }
+        });
+        $("#streetlights").click( function() {
+          console.log(routeParams.returnDirections);
+          console.log(routeParams);
         })
 });
 ////THIS IS THE LAST THING I CHANGED...
@@ -286,6 +292,8 @@ $.ajax({
         routeParams.stops = new FeatureSet();
         routeParams.barriers = new FeatureSet();
         routeParams.polygonBarriers = new esri.tasks.FeatureSet();
+        routeParams.returnDirections = true;
+
         polygonBarrierSymbol = new esri.symbol.SimpleFillSymbol();
         routeParams.outSpatialReference = {"wkid":102100};
         //dojo.ready(function() { routeTask.on("solve-complete", showRoute); });
@@ -491,13 +499,18 @@ $.ajax({
           } 
           ring.push(ring[0]); // start point needs to == end point
           var circle = new esri.geometry.Polygon(ring);
+          var polygonbarrier = new esri.Graphic(circle,polygonBarrierSymbol);
+          polygonbarrier.attributes= {barrierType: 1, Attr_Length:200
+          };
           routeParams.polygonBarriers.features.push(  
             map.graphics.add(
-              new esri.Graphic(
-                circle,
-                polygonBarrierSymbol)
-              )  
+              polygonbarrier)
+              // new esri.Graphic(
+              //   circle,
+              //   polygonBarrierSymbol)
+              // )  
             );
+          console.log(routeParams.polygonBarriers);
         }
         //Load-in barrier circle(polygon)
        function addCircleBarrier(long, lat, severity) {
@@ -566,6 +579,7 @@ $.ajax({
           //dojo.ready(function() {
             removeEventHandlers();
             routeTask.solve(routeParams);
+
           //});
         }
         //Clears all routes
@@ -596,6 +610,12 @@ $.ajax({
             //   alert(msgs.join("\n - "));
             // }
           //});
+          var solveResult = evt.result;
+          routeResults = solveResult.routeResults;
+          //console.log(routeResults[0].directions);
+          console.log("The total drive time is " + routeResults[0].directions.totalDriveTime);
+          console.log("The total length is " + routeResults[0].directions.totalLength);
+          console.log("The total time is " + routeResults[0].directions.totalTime);
         }
         //Reports any errors that occurred during the solve
         function errorHandler(err) {
