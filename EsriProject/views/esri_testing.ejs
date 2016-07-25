@@ -118,12 +118,16 @@ require( [
     ];
     var map, routeTask, routeParams, routes = [];
     var stopSymbol, barrierSymbol, barrierSymbol1, routeSymbols, polygonBarrierSymbol;
-    var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect;
+    var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect, mapOnClick_testCrime_connect, mapOnClick_mapIndex_connect;
     var stopCounter = 0;
     var barrierToggle = 0;
     var sortedData;
     var plotCount = 0;
     var routeResults;
+    var formatedData;
+    var crimeArray = [];
+    var globalxydata;
+    var severityAll = [];
     
         //  urlUtils.addProxyRule({
         //  urlPrefix: "route.arcgis.com",  
@@ -140,11 +144,12 @@ require( [
         );
         //uploading csv data
 ready(function() {
-      xhr.get("SantaMonicaCrime1.csv", {
+      xhr.get("SantaMonicaCrime.csv", {
         handleAs: "text",
     }).then(function(data) {
         globalvariable = data.split(",");
         sortedData = filterBySeverity(globalvariable);
+        formatedData = formatGlobal(globalvariable);
         $("#severity1").prop("disabled",false);
     });
         $("#addStopsBtn").click( function () {
@@ -182,7 +187,18 @@ ready(function() {
         $("#streetlights").click( function() {
           console.log(routeParams.returnDirections);
           console.log(routeParams);
-        })
+        });
+
+
+        $("#mapCrimeIndex").click( function () {
+          mapIndex();
+        });
+
+        
+        $("#mapAllGrid").click( function () {
+        severityClick(formatedData);
+        mapAllIndices();
+        });        
 });
 ////THIS IS THE LAST THING I CHANGED...
 // var globalvariable = "bacon";
@@ -242,6 +258,23 @@ function filterBySeverity(data) {
   return filteredData;
 }
 
+function formatGlobal(dataz) {
+  var formatedglobal = [];
+  var rowData = new Array(4);
+
+  for(var k = 4; k < dataz.length-3; k = k+4){
+      rowData[0] = dataz[k];
+      rowData[1] = Number(dataz[k+1]);
+      rowData[2] = Number(dataz[k+2]);
+      rowData[3] = Number(dataz[k+3]);
+      formatedglobal.push(rowData);
+      rowData = [0,0,0,0];
+  }
+  //console.log(formatedglobal);
+  
+  return formatedglobal;
+}
+
 var authdata = {client_id: '9gdUoBaoDjP5INej', client_secret: 'd2368d00106f46ec9e6d5bd9b069704a', grant_type: 'client_credentials', expiration: '1440'}
 var authresults;
 
@@ -254,10 +287,10 @@ $.ajax({
   data: authdata,
 
   success: function (results, textStatus, xhr) {
-    console.log(results);
+    //console.log(results);
     var tokenObject = JSON.parse(results);
-    console.log(Date.now() + 86400);
-    console.log(tokenObject.access_token);
+    //console.log(Date.now() + 86400);
+    //console.log(tokenObject.access_token);
     var tokenParameters = {expires: (Date.now() + 86400).toString(),server:'https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World', ssl:true, token:tokenObject.access_token, userId:authdata.client_id};
 
     esriId.registerToken(tokenParameters);
@@ -388,6 +421,10 @@ $.ajax({
           removeEventHandlers();
           mapOnClick_addBarriers_connect = on(map, "click", addBarrier1); //change to addBarrier1 once process completed
         }
+
+        function mapIndex() {
+        	mapOnClick_mapIndex_connect = on(map, "click", addAnIndex);
+        }
         //Fast mode
         function clearBarriers() {
           removeEventHandlers();
@@ -461,6 +498,87 @@ $.ajax({
           //
           console.log("addBarrier1", evt.mapPoint);
         }
+
+        //This function is to color an individual square, rather than the entire screen, which actually was just a test, rather than actually being a necessary function
+
+        // function addAnIndex(evt) {
+        //   var latLongEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
+        //   addSquareBarrier(latLongEvt[0],latLongEvt[1]);
+        //   console.log("addAnIndex", evt.mapPoint);
+
+        // }
+
+        function mapAllIndices() {
+        	var xcenter;
+        	var ycenter;
+        	var max = 0;
+        	for(var i = 0; i < crimeArray.length; i++){
+        		for(var j = 0; j < crimeArray[i].length; j++){
+        			if(crimeArray[i][j]>max){
+        				max = crimeArray[i][j];
+        			}
+        		}
+        	}
+
+
+        	for(var i = 0; i < crimeArray.length; i++){
+        		for(var j = 0; j < crimeArray[i].length; j++){
+        			xcenter = -118.51618659213699 + i * 0.001651218959260686;
+        			ycenter = 34.047981411250944 - j * 0.0013911360369712373;
+        			addSquareBarrier(xcenter,ycenter,max);
+        		}
+        	}
+
+        }
+
+
+
+        function addSquareBarrier(long, lat,max) {
+          //op as opacity, radius as radius
+          
+
+          
+
+
+          var xdata = Math.round((long-(-118.51618659213699))/0.001651218959260686);
+
+          var ydata = Math.round((34.047981411250944-lat)/0.0013911360369712373);
+
+          var op = crimeArray[xdata][ydata]/max;
+
+          xcenter = -118.51618659213699 + xdata * 0.001651218959260686;
+          ycenter = 34.047981411250944 - ydata * 0.0013911360369712373;
+
+
+          //Change square color
+          polygonBarrierSymbol.setColor(new Color([0,0,0,op]));
+          //Change square outline
+          polygonBarrierSymbol.setOutline(
+          new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+
+          var center = new esri.geometry.Point([xcenter, ycenter]);
+
+          var ring = []; // point that make up the circle
+
+
+         ring.push([center.x - .5 * 0.001651218959260686 * .95, center.y + .5 * 0.0013911360369712373* .95]);
+         ring.push([center.x + .5 * 0.001651218959260686* .95, center.y + .5 * 0.0013911360369712373* .95]);
+         ring.push([center.x + .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
+         ring.push([center.x - .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
+
+          ring.push(ring[0]); // start point needs to == end point
+          var square = new esri.geometry.Polygon(ring);
+          var polygonbarrier = new esri.Graphic(square,polygonBarrierSymbol);
+          polygonbarrier.attributes= {barrierType: 1};
+          routeParams.polygonBarriers.features.push(  
+            map.graphics.add(
+              polygonbarrier)
+            );
+        }
+
+
+
+
        //Load-in barrier circle(polygon)
         function addCircleBarrier1(long, lat, severity) {
           //op as opacity, radius as radius
@@ -484,6 +602,7 @@ $.ajax({
           polygonBarrierSymbol.setOutline(
           new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
           var center = new esri.geometry.Point([long, lat]);
+
           var ring = []; // point that make up the circle
           var pts = 10; // number of points on the circle
           var angle = 360 / pts; // used to compute points on the circle
@@ -500,7 +619,7 @@ $.ajax({
           ring.push(ring[0]); // start point needs to == end point
           var circle = new esri.geometry.Polygon(ring);
           var polygonbarrier = new esri.Graphic(circle,polygonBarrierSymbol);
-          polygonbarrier.attributes= {barrierType: 1, Attr_Length:200
+          polygonbarrier.attributes= {barrierType: 1, attr_length : 100
           };
           routeParams.polygonBarriers.features.push(  
             map.graphics.add(
@@ -510,7 +629,7 @@ $.ajax({
               //   polygonBarrierSymbol)
               // )  
             );
-          console.log(routeParams.polygonBarriers);
+          //console.log(routeParams.polygonBarriers);
         }
         //Load-in barrier circle(polygon)
        function addCircleBarrier(long, lat, severity) {
@@ -645,6 +764,94 @@ $.ajax({
          }
          plotCount = 0;
        }
+
+       function severityClick(dataz) {
+        crimeArray = [];
+
+        var xmin=-13193161.542197285;
+        var xmax=-13185441.402340494;
+        var ymax=4035246.5784217017;
+        var ymin=4028520.119932615;
+        var xcells = Math.ceil((xmax-xmin)/187.02);
+        var ycells = Math.ceil((ymax-ymin)/187.02);
+        var longLatTL = webMercatorUtils.xyToLngLat(xmin, ymax, true);
+        var longLatRB = webMercatorUtils.xyToLngLat(xmax, ymin, true);
+        console.log(longLatTL);
+        console.log(longLatRB);
+
+        var xdata;
+        var ydata;
+        var xyarr=[];
+        
+
+        var deltaLngLat = [(-longLatTL[0]+longLatRB[0])/42,(-longLatRB[1]+longLatTL[1])/36];
+        console.log(deltaLngLat);
+        for(var i = 0; i < 50; i++){
+          crimeArray.push([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+        }
+
+        for(var j = 0; j < dataz.length; j++){
+
+          xdata = Math.round((dataz[j][2]-longLatTL[0])/deltaLngLat[0]);
+          
+
+          ydata = Math.round((longLatTL[1]-dataz[j][1])/deltaLngLat[1]);
+          xyarr.push([xdata,ydata]);
+        }
+
+        for( var k = 0; k < crimeArray.length; k++){
+        	for(var m = 0; m < xyarr.length; m++) {
+        		if (k == xyarr[m][0]){
+        			crimeArray[k][xyarr[m][1]]++;
+        		}
+        	}
+        }
+
+        console.log(crimeArray);
+        
+        
+        globalxydata = [deltaLngLat,longLatTL];
+        
+        mapOnClick_testCrime_connect = map.on("click", testCrime);
+
+        /*
+        Format the following data in order to show graphics in for each of the crime zones.  You'll have to make sure they correlate correctly with the previous for loop.  7/19/2016
+          var polygonJson  = {"rings":[[[-122.63,45.52],[-122.57,45.53],[-122.52,45.50],[-122.49,45.48],
+    [-122.64,45.49],[-122.63,45.52],[-122.63,45.52]]],"spatialReference":{"wkid":4326 }};
+  var polygon = new Polygon(polygonJson);
+
+            var circle = new esri.geometry.Polygon(ring);
+          var polygonbarrier = new esri.Graphic(circle,polygonBarrierSymbol);
+          polygonbarrier.attributes= {barrierType: 1, attr_length : 100
+          };
+          routeParams.polygonBarriers.features.push(  
+            map.graphics.add(
+              polygonbarrier)
+              // new esri.Graphic(
+              //   circle,
+              //   polygonBarrierSymbol)
+              // )  
+            );
+
+            */
+
+      }
+
+      function testCrime(evt) {
+      var longLatEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
+      var xcell = Math.round((longLatEvt[0]-globalxydata[1][0])/globalxydata[0][0]);
+      var ycell = Math.round((globalxydata[1][1]-longLatEvt[1])/globalxydata[0][1]);
+      console.log(crimeArray[xcell][ycell]);
+      console.log("The longitude is " + longLatEvt[0] + ",latitude is " + longLatEvt[1] );
+      }
+
+
+
+
+
+
+
+
        function showIcons() {
         console.log("showIcons() called");
         clearAll();
@@ -708,7 +915,7 @@ $.ajax({
             <input type="radio" name="myRadioButtons" id="icons" value="2" unchecked/> <label for="icons">Icons</label><br/><br/>
             <input type="checkbox" checked="checked" id="streetlights" unchecked /> <label for="streetlights">Street Lights</label><br/>
           </form>
-          
+          <button id="mapAllGrid">Map all Grid</button>
         </div>
       </div>
     </div>
