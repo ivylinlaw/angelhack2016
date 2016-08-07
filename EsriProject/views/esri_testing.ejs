@@ -6,8 +6,8 @@
   <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
   <title>Saferoute</title>
 
-  <link rel="stylesheet" href="https://js.arcgis.com/3.16/dijit/themes/claro/claro.css">
-  <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/3.17/dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
   <link rel="stylesheet" href="style.css" />
 
 
@@ -18,7 +18,7 @@
   </script>
 
 
-    <script src="https://js.arcgis.com/3.16/"></script>
+    <script src="https://js.arcgis.com/3.17/"></script>
 
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
@@ -521,8 +521,8 @@ $.ajax({
         	}
 
 
-        	for(var i = 0; i < crimeArray.length; i++){
-        		for(var j = 0; j < crimeArray[i].length; j++){
+        	for(var i = 0; i < crimeArray.length; i = i+1){
+        		for(var j = 0; j < crimeArray[i].length; j=j+1){
         			xcenter = -118.51618659213699 + i * 0.001651218959260686;
         			ycenter = 34.047981411250944 - j * 0.0013911360369712373;
         			addSquareBarrier(xcenter,ycenter,max);
@@ -697,6 +697,7 @@ $.ajax({
           //Make sure data is ready?
           //dojo.ready(function() {
             removeEventHandlers();
+            console.log(routeTask.getServiceDescription());
             routeTask.solve(routeParams);
 
           //});
