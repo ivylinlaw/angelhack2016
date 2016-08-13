@@ -18,117 +18,118 @@
   </script>
 
 
-    <script src="https://js.arcgis.com/3.17/"></script>
+  <script src="https://js.arcgis.com/3.17/"></script>
 
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
   <script>
-require( [
-  "esri/urlUtils",
-  "esri/config",
-  "esri/map",
-  "esri/graphic",
-  "esri/IdentityManager",            
-  "esri/tasks/RouteTask",            
-  "esri/tasks/RouteParameters",
-  "esri/tasks/RouteResult",
-  "esri/tasks/FeatureSet",            
-  "esri/symbols/SimpleMarkerSymbol",
-  "esri/symbols/SimpleLineSymbol",
-  "esri/symbols/SimpleFillSymbol",  
-  "esri/Color",
-  "dojo/_base/array",
-  "dojo/on",
-  "dojo/dom",
-  "dijit/registry",
-  "dojo/query",
-  "esri/geometry/webMercatorUtils",
-  "esri/geometry/Circle",
-  "esri/geometry/Point",
-  "dojo/request",
-  "dojo/request/xhr",
-  "dojo/ready",
-  "esri/tasks/geometry",
-  "esri/units",
-  "dijit/layout/BorderContainer",
-  "dijit/layout/ContentPane",
-  "dijit/form/HorizontalSlider",
-  "dijit/form/HorizontalRuleLabels"
-  ], function (
-    urlUtils, esriConfig, Map, Graphic, esriId, RouteTask, RouteParameters, RouteResult,
-    FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,          
-    Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point, request, xhr,ready
-    ) {
-    var data = [
-    "Disturbance of the Peace",-118.4838611,34.01306945,1,
-    "Audible Burglar Alarm",-118.4555694,34.025375,1,
-    "Audible Burglar Alarm",-118.4556389,34.02026389,1,
-    "Auto Burglary Report",-118.4858611,34.03840278,1,
-    "Battery Just Occurred",-118.4974167,34.00933333,1,
-    "Bike Theft Report",-118.4641111,34.03013889,1,
-    "Disturbance at a Business",-118.5006528,34.01718056,1,
-    "Disturbance at a Business",-118.472125,34.01804167,1,
-    "Disturbance of the Peace",-118.472,34.02686111,1,
-    "Disturbance of the Peace",-118.484875,34.01236111,1,
-    "Disturbance of the Peace",-118.4629861,34.02290278,1,
-    "Disturbance of the Peace",-118.4964722,34.01011111,1,
-    "Disturbance of the Peace",-118.5046111,34.0245,1,
-    "Disturbance of the Peace Report",-118.4738194,34.03756945,1,
-    "Fight",-118.494375,34.01180556,1,
-    "Grand Theft Auto Report",-118.4787917,34.00372222,1,
-    "Petty Theft Just Occurred",-118.4831944,34.00161111,1,
-    "Suspicious Circumstances",-118.4934306,34.02438889,1,
-    "Suspicious Person",-118.4700556,34.00376389,1,
-    "Suspicious Person",-118.4959444,34.01194445,1,
-    "Theft of Recyclables",-118.5069306,34.022625,1,
-    "Trespassing",-118.4924722,34.01333333,1,
-    "Trespassing",-118.4994306,34.02086111,1,
-    "Unknown Trouble",-118.4888611,34.0085,1,
-    "Assault Just Occurred",-118.50275,34.01816667,1,
-    "Assault w/Deadly Weapon Just Occurred",-118.4614722,34.02372222,1,
-    "Assistance Call",-118.4981528,34.02055556,1,
-    "Assistance Call",-118.4978056,34.01554167,1,
-    "Disturbance of the Peace",-118.4892917,34.01101389,3,
-    "Disturbance of the Peace",-118.4927639,34.01830556,3,
-    "Disturbance of the Peace",-118.4945556,34.03008333,3,
-    "Fight",-118.4964722,34.01011111,3,
-    "Health & Safety Code Violation",-118.4813056,33.99938889,3,
-    "Indecent Exposure Now",-118.4811806,34.01204167,3,
-    "Petty Theft Just Occurred",-118.4984306,34.01765278,3,
-    "Report of Shots Fired",-118.4842778,34.02129167,3,
-    "Silent Robbery Alarm",-118.4955833,34.01994445,3,
-    "Suspicious Circumstances",-118.4824167,34.00265278,3,
-    "Suspicious Vehicle",-118.4878889,34.00519444,3,
-    "Trespassing",-118.5025972,34.019625,3,
-    "Trespassing",-118.4899306,34.02061111,3,
-    "Audible Burglar Alarm",-118.4959167,34.01706945,3,
-    "Audible Burglar Alarm",-118.4859306,34.01640278,3,
-    "Indecent Exposure Now",-118.5054167,34.02125,3,
-    "Suspicious Person",-118.4874583,34.03581944,3,
-    "Assistance Call",-118.4885278,34.02177778,3,
-    "Burglary Report",-118.5090139,34.02443056,3,
-    "Death Investigation",-118.4848611,34.00730556,3,
-    "Disturbance of the Peace",-118.4873194,34.00691667,3,
-    "Disturbance of the Peace",-118.4983333,34.027,3,
-    "Health & Safety Code Violation",-118.4965417,34.01918056,3,
-    "Health & Safety Code Violation",-118.4813056,33.99938889,3,
-    "Petty Theft Report",-118.48125,34.01086111,3,
-    "Trespassing",-118.4911944,34.02090278,3,
-    "Trespassing",-118.5006528,34.01718056,3
-    ];
-    var map, routeTask, routeParams, routes = [];
-    var stopSymbol, barrierSymbol, barrierSymbol1, routeSymbols, polygonBarrierSymbol;
-    var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect, mapOnClick_testCrime_connect, mapOnClick_mapIndex_connect;
-    var stopCounter = 0;
-    var barrierToggle = 0;
-    var sortedData;
-    var plotCount = 0;
-    var routeResults;
-    var formatedData;
-    var crimeArray = [];
-    var globalxydata;
-    var severityAll = [];
-    
+    require( [
+      "esri/urlUtils",
+      "esri/config",
+      "esri/map",
+      "esri/graphic",
+      "esri/IdentityManager",            
+      "esri/tasks/RouteTask",            
+      "esri/tasks/RouteParameters",
+      "esri/tasks/RouteResult",
+      "esri/tasks/FeatureSet",            
+      "esri/symbols/SimpleMarkerSymbol",
+      "esri/symbols/SimpleLineSymbol",
+      "esri/symbols/SimpleFillSymbol",  
+      "esri/Color",
+      "dojo/_base/array",
+      "dojo/on",
+      "dojo/dom",
+      "dijit/registry",
+      "dojo/query",
+      "esri/geometry/webMercatorUtils",
+      "esri/geometry/Circle",
+      "esri/geometry/Point",
+      "dojo/request",
+      "dojo/request/xhr",
+      "dojo/ready",
+      "esri/tasks/geometry",
+      "esri/units",
+      "dijit/layout/BorderContainer",
+      "dijit/layout/ContentPane",
+      "dijit/form/HorizontalSlider",
+      "dijit/form/HorizontalRuleLabels"
+      ], function (
+        urlUtils, esriConfig, Map, Graphic, esriId, RouteTask, RouteParameters, RouteResult,
+        FeatureSet, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,          
+        Color, array, on, dom, registry, djQuery, webMercatorUtils, Circle, Point, request, xhr,ready
+        ) 
+      {
+        var data = [
+        "Disturbance of the Peace",-118.4838611,34.01306945,1,
+        "Audible Burglar Alarm",-118.4555694,34.025375,1,
+        "Audible Burglar Alarm",-118.4556389,34.02026389,1,
+        "Auto Burglary Report",-118.4858611,34.03840278,1,
+        "Battery Just Occurred",-118.4974167,34.00933333,1,
+        "Bike Theft Report",-118.4641111,34.03013889,1,
+        "Disturbance at a Business",-118.5006528,34.01718056,1,
+        "Disturbance at a Business",-118.472125,34.01804167,1,
+        "Disturbance of the Peace",-118.472,34.02686111,1,
+        "Disturbance of the Peace",-118.484875,34.01236111,1,
+        "Disturbance of the Peace",-118.4629861,34.02290278,1,
+        "Disturbance of the Peace",-118.4964722,34.01011111,1,
+        "Disturbance of the Peace",-118.5046111,34.0245,1,
+        "Disturbance of the Peace Report",-118.4738194,34.03756945,1,
+        "Fight",-118.494375,34.01180556,1,
+        "Grand Theft Auto Report",-118.4787917,34.00372222,1,
+        "Petty Theft Just Occurred",-118.4831944,34.00161111,1,
+        "Suspicious Circumstances",-118.4934306,34.02438889,1,
+        "Suspicious Person",-118.4700556,34.00376389,1,
+        "Suspicious Person",-118.4959444,34.01194445,1,
+        "Theft of Recyclables",-118.5069306,34.022625,1,
+        "Trespassing",-118.4924722,34.01333333,1,
+        "Trespassing",-118.4994306,34.02086111,1,
+        "Unknown Trouble",-118.4888611,34.0085,1,
+        "Assault Just Occurred",-118.50275,34.01816667,1,
+        "Assault w/Deadly Weapon Just Occurred",-118.4614722,34.02372222,1,
+        "Assistance Call",-118.4981528,34.02055556,1,
+        "Assistance Call",-118.4978056,34.01554167,1,
+        "Disturbance of the Peace",-118.4892917,34.01101389,3,
+        "Disturbance of the Peace",-118.4927639,34.01830556,3,
+        "Disturbance of the Peace",-118.4945556,34.03008333,3,
+        "Fight",-118.4964722,34.01011111,3,
+        "Health & Safety Code Violation",-118.4813056,33.99938889,3,
+        "Indecent Exposure Now",-118.4811806,34.01204167,3,
+        "Petty Theft Just Occurred",-118.4984306,34.01765278,3,
+        "Report of Shots Fired",-118.4842778,34.02129167,3,
+        "Silent Robbery Alarm",-118.4955833,34.01994445,3,
+        "Suspicious Circumstances",-118.4824167,34.00265278,3,
+        "Suspicious Vehicle",-118.4878889,34.00519444,3,
+        "Trespassing",-118.5025972,34.019625,3,
+        "Trespassing",-118.4899306,34.02061111,3,
+        "Audible Burglar Alarm",-118.4959167,34.01706945,3,
+        "Audible Burglar Alarm",-118.4859306,34.01640278,3,
+        "Indecent Exposure Now",-118.5054167,34.02125,3,
+        "Suspicious Person",-118.4874583,34.03581944,3,
+        "Assistance Call",-118.4885278,34.02177778,3,
+        "Burglary Report",-118.5090139,34.02443056,3,
+        "Death Investigation",-118.4848611,34.00730556,3,
+        "Disturbance of the Peace",-118.4873194,34.00691667,3,
+        "Disturbance of the Peace",-118.4983333,34.027,3,
+        "Health & Safety Code Violation",-118.4965417,34.01918056,3,
+        "Health & Safety Code Violation",-118.4813056,33.99938889,3,
+        "Petty Theft Report",-118.48125,34.01086111,3,
+        "Trespassing",-118.4911944,34.02090278,3,
+        "Trespassing",-118.5006528,34.01718056,3
+        ];
+        var map, routeTask, routeParams, routes = [];
+        var stopSymbol, barrierSymbol, barrierSymbol1, routeSymbols, polygonBarrierSymbol;
+        var mapOnClick_addStops_connect, mapOnClick_addBarriers_connect, mapOnClick_addPolygonBarriers_connect, mapOnClick_testCrime_connect, mapOnClick_mapIndex_connect;
+        var stopCounter = 0;
+        var barrierToggle = 0;
+        var sortedData;
+        var plotCount = 0;
+        var routeResults;
+        var formatedData;
+        var crimeArray = [];
+        var globalxydata;
+        var severityAll = [];
+
         //  urlUtils.addProxyRule({
         //  urlPrefix: "route.arcgis.com",  
         //  proxyUrl: "/sproxy/"
@@ -143,63 +144,63 @@ require( [
         }
         );
         //uploading csv data
-ready(function() {
-      xhr.get("SantaMonicaCrime.csv", {
-        handleAs: "text",
-    }).then(function(data) {
-        globalvariable = data.split(",");
-        sortedData = filterBySeverity(globalvariable);
-        formatedData = formatGlobal(globalvariable);
-        $("#severity1").prop("disabled",false);
-    });
-        $("#addStopsBtn").click( function () {
-          addStops();
-        });
-        $("#addBarriersBtn").click( function () {
-          if(barrierToggle==0) {
-            $(this).css('background','orange');
-            addBarriers();
-            barrierToggle=1;
-          } else if(barrierToggle ==1) {
-            $(this).css('background','rgba(0,0,0, 0.3)');
-            removeEventHandlers();
-            barrierToggle=0;
-          }
-        });
-        $("#clearRoutesBtn").click( function () {
-          clearStops();
-          clearBarriers();
-          clearRoutes();
-          console.log(globalvariable);
-        });
-        $("#bufferzone").click( function () {
-          showBufferZones(sortedData);
-        });
-        $("#icons").click( function () {
-          showIcons();
-        });
-        $("#routeNameForm").click( function() {
-          sortedData = filterBySeverity(globalvariable);
-          if($("#bufferzone").is(':checked')) {
+        ready(function() {
+          xhr.get("SantaMonicaCrime.csv", {
+            handleAs: "text",
+          }).then(function(data) {
+            globalvariable = data.split(",");
+            sortedData = filterBySeverity(globalvariable);
+            formatedData = formatGlobal(globalvariable);
+            $("#severity1").prop("disabled",false);
+          });
+          $("#addStopsBtn").click( function () {
+            addStops();
+          });
+          $("#addBarriersBtn").click( function () {
+            if(barrierToggle==0) {
+              $(this).css('background','orange');
+              addBarriers();
+              barrierToggle=1;
+            } else if(barrierToggle ==1) {
+              $(this).css('background','rgba(0,0,0, 0.3)');
+              removeEventHandlers();
+              barrierToggle=0;
+            }
+          });
+          $("#clearRoutesBtn").click( function () {
+            clearStops();
+            clearBarriers();
+            clearRoutes();
+            console.log(globalvariable);
+          });
+          $("#bufferzone").click( function () {
             showBufferZones(sortedData);
-          }
-        });
-        $("#streetlights").click( function() {
-          console.log(routeParams.returnDirections);
-          console.log(routeParams);
-        });
+          });
+          $("#icons").click( function () {
+            showIcons();
+          });
+          $("#routeNameForm").click( function() {
+            sortedData = filterBySeverity(globalvariable);
+            if($("#bufferzone").is(':checked')) {
+              showBufferZones(sortedData);
+            }
+          });
+          $("#streetlights").click( function() {
+            console.log(routeParams.returnDirections);
+            console.log(routeParams);
+          });
 
 
-        $("#mapCrimeIndex").click( function () {
-          mapIndex();
-        });
+          $("#mapCrimeIndex").click( function () {
+            mapIndex();
+          });
 
-        
-        $("#mapAllGrid").click( function () {
-        severityClick(formatedData);
-        mapAllIndices();
-        });        
-});
+
+          $("#mapAllGrid").click( function () {
+            severityClick(formatedData);
+            mapAllIndices();
+          });        
+        });
 ////THIS IS THE LAST THING I CHANGED...
 // var globalvariable = "bacon";
 // $.ajax({
@@ -212,7 +213,7 @@ ready(function() {
 // });
 //The globalvariable below is only going to be available after ajax request is successful.
     //HPE Data upload
-var objectdata = {apikey : "385bcd30-9d17-4037-917f-442c08e82b78", file : "/../public/SMCrimeBeatData.csv"/*"https://drive.google.com/uc?export=download&id=0BxioPUqqdZqReExzdWZYc2tfZFE"*/, max_results: 5, columns: ["Call_Type","Location"]}
+    var objectdata = {apikey : "385bcd30-9d17-4037-917f-442c08e82b78", file : "/../public/SMCrimeBeatData.csv"/*"https://drive.google.com/uc?export=download&id=0BxioPUqqdZqReExzdWZYc2tfZFE"*/, max_results: 5, columns: ["Call_Type","Location"]}
 // $.ajax({
 //         url: "https://api.havenondemand.com/1/api/sync/anomalydetection/v1",
 //         type: 'POST',
@@ -229,7 +230,7 @@ var objectdata = {apikey : "385bcd30-9d17-4037-917f-442c08e82b78", file : "/../p
 //         error: function (xhr, textStatus, errorThrown) {
 //             console.log("test failed");
 //             console.log("ERROR:" + xhr.responseText + xhr.status + errorThrown);
-            
+
 //             return false;
 //         }
 //     });
@@ -263,12 +264,12 @@ function formatGlobal(dataz) {
   var rowData = new Array(4);
 
   for(var k = 4; k < dataz.length-3; k = k+4){
-      rowData[0] = dataz[k];
-      rowData[1] = Number(dataz[k+1]);
-      rowData[2] = Number(dataz[k+2]);
-      rowData[3] = Number(dataz[k+3]);
-      formatedglobal.push(rowData);
-      rowData = [0,0,0,0];
+    rowData[0] = dataz[k];
+    rowData[1] = Number(dataz[k+1]);
+    rowData[2] = Number(dataz[k+2]);
+    rowData[3] = Number(dataz[k+3]);
+    formatedglobal.push(rowData);
+    rowData = [0,0,0,0];
   }
   //console.log(formatedglobal);
   
@@ -320,15 +321,15 @@ $.ajax({
 //     console.log(body.access_token);
 // });
 //spH-4ut_taI6YRCYqbz4a1KWiK9Psdy2HaDAcNcq3z3yhLy0BdhPovt0mNRis3DbZlxDaT0t633lZlqhNZvptV5YHkKw_dmY5b00Xp2b6k1EC452t0q2GV2olqlK3RZux1ROFGIWnTpePUz2FON0rg..
-        routeTask = new RouteTask("https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World");
-        routeParams = new RouteParameters();
-        routeParams.stops = new FeatureSet();
-        routeParams.barriers = new FeatureSet();
-        routeParams.polygonBarriers = new esri.tasks.FeatureSet();
-        routeParams.returnDirections = true;
+routeTask = new RouteTask("https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World");
+routeParams = new RouteParameters();
+routeParams.stops = new FeatureSet();
+routeParams.barriers = new FeatureSet();
+routeParams.polygonBarriers = new esri.tasks.FeatureSet();
+routeParams.returnDirections = true;
 
-        polygonBarrierSymbol = new esri.symbol.SimpleFillSymbol();
-        routeParams.outSpatialReference = {"wkid":102100};
+polygonBarrierSymbol = new esri.symbol.SimpleFillSymbol();
+routeParams.outSpatialReference = {"wkid":102100};
         //dojo.ready(function() { routeTask.on("solve-complete", showRoute); });
         routeTask.on("solve-complete", showRoute);
         routeTask.on("error", errorHandler);
@@ -474,12 +475,12 @@ $.ajax({
                 )
               )
             );
-            
-            
+
+
           //
           console.log("addBarrier", evt.mapPoint);
         }
-          function addBarrier1(evt) {
+        function addBarrier1(evt) {
           var latLongEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
           var severityEvt = $("input[name=severityRadioButtons]:checked").val();
           addCircleBarrier1(latLongEvt[0],latLongEvt[1],severityEvt);
@@ -554,22 +555,22 @@ $.ajax({
           polygonBarrierSymbol.setColor(new Color([0,0,0,op]));
           //Change square outline
           polygonBarrierSymbol.setOutline(
-          new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
 
           var center = new esri.geometry.Point([xcenter, ycenter]);
 
           var ring = []; // point that make up the circle
 
 
-         ring.push([center.x - .5 * 0.001651218959260686 * .95, center.y + .5 * 0.0013911360369712373* .95]);
-         ring.push([center.x + .5 * 0.001651218959260686* .95, center.y + .5 * 0.0013911360369712373* .95]);
-         ring.push([center.x + .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
-         ring.push([center.x - .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
+          ring.push([center.x - .5 * 0.001651218959260686 * .95, center.y + .5 * 0.0013911360369712373* .95]);
+          ring.push([center.x + .5 * 0.001651218959260686* .95, center.y + .5 * 0.0013911360369712373* .95]);
+          ring.push([center.x + .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
+          ring.push([center.x - .5 * 0.001651218959260686* .95, center.y - .5 * 0.0013911360369712373* .95]);
 
           ring.push(ring[0]); // start point needs to == end point
           var square = new esri.geometry.Polygon(ring);
           var polygonbarrier = new esri.Graphic(square,polygonBarrierSymbol);
-          polygonbarrier.attributes= {barrierType: 1};
+          //polygonbarrier.attributes= {barrierType: 0};
           routeParams.polygonBarriers.features.push(  
             map.graphics.add(
               polygonbarrier)
@@ -580,7 +581,7 @@ $.ajax({
 
 
        //Load-in barrier circle(polygon)
-        function addCircleBarrier1(long, lat, severity) {
+       function addCircleBarrier1(long, lat, severity) {
           //op as opacity, radius as radius
           var op, radius;
           if(severity == 1) {
@@ -600,7 +601,9 @@ $.ajax({
           polygonBarrierSymbol.setColor(new Color([255,0,0,op]));
           //Change circle outline
           polygonBarrierSymbol.setOutline(
-          new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+            new SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([255,255,255,0]), 2));
+
+          console.log([long, lat]);
           var center = new esri.geometry.Point([long, lat]);
 
           var ring = []; // point that make up the circle
@@ -628,11 +631,11 @@ $.ajax({
               //   circle,
               //   polygonBarrierSymbol)
               // )  
-            );
+              );
           //console.log(routeParams.polygonBarriers);
         }
         //Load-in barrier circle(polygon)
-       function addCircleBarrier(long, lat, severity) {
+        function addCircleBarrier(long, lat, severity) {
           //op as opacity, radius as radius
           var op, radius;
           if(severity == 1) {
@@ -652,27 +655,27 @@ $.ajax({
           testSymbol = new SimpleMarkerSymbol();
           testSymbol.setAngle(0);
           testSymbol.setColor(new Color([220, 20, 60, .1]));
-        testSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
-        testSymbol.setSize(10);
+          testSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
+          testSymbol.setSize(10);
 
-        var xyUnits = webMercatorUtils.lngLatToXY(long, lat);
-        var pt = new Point(xyUnits[0],xyUnits[1],map.spatialReference);
+          var xyUnits = webMercatorUtils.lngLatToXY(long, lat);
+          var pt = new Point(xyUnits[0],xyUnits[1],map.spatialReference);
 
-        routeParams.polygonBarriers.features.push( 
-          map.graphics.add(
-            new esri.Graphic(
-              pt,
-              testSymbol
+          routeParams.polygonBarriers.features.push( 
+            map.graphics.add(
+              new esri.Graphic(
+                pt,
+                testSymbol
+                )
               )
-            )
-          );
+            );
 
-        plotCount++;
-
+          plotCount++;
 
 
 
-      }
+
+        }
         //Remove all circle(polygon) barriers
         function clearCircleBarrier() {
           removeEventHandlers();
@@ -836,26 +839,26 @@ $.ajax({
 
             */
 
-      }
+          }
 
-      function testCrime(evt) {
-      var longLatEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
-      var xcell = Math.round((longLatEvt[0]-globalxydata[1][0])/globalxydata[0][0]);
-      var ycell = Math.round((globalxydata[1][1]-longLatEvt[1])/globalxydata[0][1]);
-      console.log(crimeArray[xcell][ycell]);
-      console.log("The longitude is " + longLatEvt[0] + ",latitude is " + longLatEvt[1] );
-      }
-
-
+          function testCrime(evt) {
+            var longLatEvt = webMercatorUtils.xyToLngLat(evt.mapPoint["x"], evt.mapPoint["y"], true);
+            var xcell = Math.round((longLatEvt[0]-globalxydata[1][0])/globalxydata[0][0]);
+            var ycell = Math.round((globalxydata[1][1]-longLatEvt[1])/globalxydata[0][1]);
+            console.log(crimeArray[xcell][ycell]);
+            console.log("The longitude is " + longLatEvt[0] + ",latitude is " + longLatEvt[1] );
+          }
 
 
 
 
 
 
-       function showIcons() {
-        console.log("showIcons() called");
-        clearAll();
+
+
+          function showIcons() {
+            console.log("showIcons() called");
+            clearAll();
           //Create a new PictureMarkerSymbol based on the static image and set a few properties.
           //Change url to customize
           // Create barriers
@@ -902,9 +905,9 @@ $.ajax({
       </div>
       <button id="addBarriersBtn">Add Barriers</button>
       <form id="severityForm">
-          <input type="radio" name="severityRadioButtons" id="severity1" checked value="1" disabled="true"/> <label for="severity1">1</label>
-          <input type="radio" name="severityRadioButtons" id="severity2" unchecked value="2"/> <label for="severity2">2</label>
-          <input type="radio" name="severityRadioButtons" id="severity3" unchecked value="3"/> <label for="severity3">3</label>
+        <input type="radio" name="severityRadioButtons" id="severity1" checked value="1" disabled="true"/> <label for="severity1">1</label>
+        <input type="radio" name="severityRadioButtons" id="severity2" unchecked value="2"/> <label for="severity2">2</label>
+        <input type="radio" name="severityRadioButtons" id="severity3" unchecked value="3"/> <label for="severity3">3</label>
       </form>
 
       <div id="rightControlPanel">
@@ -921,4 +924,4 @@ $.ajax({
       </div>
     </div>
   </body>
-</html>
+  </html>
